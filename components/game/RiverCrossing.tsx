@@ -29,7 +29,7 @@ export function RiverCrossing({ location, depth, sol, onChoice }: RiverCrossingP
 
       {/* River stats */}
       <div className="p-3 rounded-lg bg-sol-darker border border-sol-border text-center space-y-1">
-        <div className="text-xs text-sol-muted">Data Stream Depth</div>
+        <div className="text-xs text-sol-muted">Liquidity Depth</div>
         <div className={`text-2xl font-pixel ${depthWarning}`}>
           {depth.toFixed(1)} ft
         </div>

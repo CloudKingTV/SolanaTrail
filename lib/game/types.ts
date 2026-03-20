@@ -15,7 +15,7 @@ export type GamePhase =
   | 'river_crossing'
   | 'trading'         // at a fort/trading post
   | 'landmark'        // arrived at a landmark, can look around
-  | 'hunting'         // bug bounty hunting mini-game
+  | 'hunting'         // alpha scouting mini-game
   | 'resting'
   | 'gameOver'
   | 'victory'
@@ -34,23 +34,23 @@ export const PROFESSIONS: Profession[] = [
   {
     id: 'whale',
     name: 'Crypto Whale',
-    description: 'You have mass SOL from early investments. Easiest start, but lowest score multiplier.',
+    description: 'You got in early and have bags for days. Easiest start, but lowest score multiplier.',
     startingSol: 1600,
     scoreMultiplier: 1,
     icon: '🐋',
   },
   {
-    id: 'developer',
-    name: 'Smart Contract Dev',
-    description: 'A skilled builder with moderate funds. Balanced difficulty, 2x score multiplier.',
+    id: 'flipper',
+    name: 'NFT Flipper',
+    description: 'You flip JPEGs and ride trends. Moderate funds, 2x score multiplier.',
     startingSol: 800,
     scoreMultiplier: 2,
-    icon: '👨‍💻',
+    icon: '🖼️',
   },
   {
     id: 'degen',
-    name: 'DeFi Degen',
-    description: 'You ape\'d into everything and have barely any SOL left. Hardest start, but 3x score multiplier!',
+    name: 'Memecoin Degen',
+    description: 'You ape\'d into every dog coin and have barely any SOL left. Hardest start, but 3x score multiplier!',
     startingSol: 400,
     scoreMultiplier: 3,
     icon: '🦍',
@@ -115,13 +115,13 @@ export const RATIONS_INFO: Record<Rations, { label: string; description: string;
 // --- RESOURCES/INVENTORY ---
 export interface Inventory {
   sol: number                // cash (like dollars)
-  oxen: number               // validators/servers that pull your "wagon" (need at least 1)
-  food: number               // bandwidth/data packs (pounds equivalent)
-  clothing: number           // security patches / firewall sets
-  ammunition: number         // bug bounty ammo (boxes of 20)
-  spareWheels: number        // spare GPUs
-  spareAxles: number         // spare SSDs
-  spareTongues: number       // spare power supplies
+  oxen: number               // laptops/rigs that keep you moving (need at least 1)
+  food: number               // ramen packs (pounds equivalent)
+  clothing: number           // hoodies (crypto uniform, protection)
+  ammunition: number         // alpha passes (boxes of 20 tips)
+  spareWheels: number        // backup chargers
+  spareAxles: number         // hardware wallets
+  spareTongues: number       // burner phones
 }
 
 // --- STORE ITEMS ---
@@ -183,7 +183,7 @@ export interface EventOutcome {
   daysLost?: number
 }
 
-// --- HUNTING (Bug Bounty) ---
+// --- HUNTING (Alpha Scouting) ---
 export interface HuntingTarget {
   id: string
   name: string

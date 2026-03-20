@@ -60,19 +60,19 @@ export function StatusBar({ inventory, day, distance, totalDistance, health, wea
           </span>
         </div>
         <div>
-          <span className="text-sol-purple">⬡</span>
+          <span className="text-sol-purple">💻</span>
           <span className={`font-semibold ml-1 ${inventory.oxen < 2 ? 'text-danger' : 'text-sol-text'}`}>
             {inventory.oxen}
           </span>
         </div>
         <div>
-          <span className="text-sol-blue">⚡</span>
+          <span className="text-sol-blue">🍜</span>
           <span className={`font-semibold ml-1 ${inventory.food < 100 ? 'text-danger' : 'text-sol-text'}`}>
             {inventory.food}
           </span>
         </div>
         <div>
-          <span className="text-warning">🛡️</span>
+          <span className="text-warning">🧥</span>
           <span className="font-semibold ml-1 text-sol-text">{inventory.clothing}</span>
         </div>
       </div>

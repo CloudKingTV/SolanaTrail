@@ -1,21 +1,22 @@
 import { GameEvent } from './types'
 
 // Events modeled after the classic Oregon Trail's random events
+// Rethemed for everyday Solana degen culture
 // Categories: disease, breakdown, weather, theft, trail, positive, choice
 
 export const GAME_EVENTS: GameEvent[] = [
   // ==================== DISEASES ====================
   {
     id: 'dysentery',
-    title: 'Smart Contract Virus!',
-    description: 'A party member has caught a smart contract virus — the crypto equivalent of dysentery. Their wallet is leaking.',
+    title: 'Bad Ramen!',
+    description: 'A party member ate some sketchy gas station ramen. They\'re not doing well — the crypto equivalent of dysentery.',
     weight: 6,
     category: 'disease',
     choices: [{
       id: 'rest',
-      text: 'Rest and patch the code',
+      text: 'Rest and hydrate',
       outcome: {
-        description: 'You spend time debugging. Hopefully the patch holds.',
+        description: 'They\'re laid up for a day. Should have stuck with the name-brand stuff.',
         partyEffect: { type: 'status', value: 0, status: 'sick', target: 'random' },
         daysLost: 1,
       },
@@ -23,30 +24,30 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'cholera',
-    title: 'Mempool Poisoning!',
-    description: 'The network data is corrupted! A party member ingested bad transaction data.',
+    title: 'Scam Link Clicked!',
+    description: 'A party member clicked a "free airdrop" link in their DMs. Their wallet is compromised!',
     weight: 4,
     category: 'disease',
     choices: [{
       id: 'treat',
-      text: 'Quarantine and flush the cache',
+      text: 'Revoke approvals immediately',
       outcome: {
-        description: 'The infection is serious. They need time to recover.',
+        description: 'The damage is done. Most approvals revoked, but they\'re shaken up.',
         partyEffect: { type: 'damage', value: 25, status: 'sick', target: 'random' },
       },
     }],
   },
   {
     id: 'typhoid',
-    title: 'Consensus Failure Syndrome!',
-    description: 'A party member\'s node is out of sync. They\'re producing invalid blocks and feeling terrible.',
+    title: 'Doomscrolling Sickness!',
+    description: 'A party member has been doomscrolling CT for 48 hours straight. They\'re seeing red candles everywhere.',
     weight: 4,
     category: 'disease',
     choices: [{
       id: 'resync',
-      text: 'Re-sync from genesis',
+      text: 'Force them to touch grass',
       outcome: {
-        description: 'Re-syncing takes time but it\'s the only cure.',
+        description: 'They need time offline. The timeline will still be there tomorrow.',
         partyEffect: { type: 'status', value: 0, status: 'sick', target: 'random' },
         daysLost: 2,
       },
@@ -55,29 +56,29 @@ export const GAME_EVENTS: GameEvent[] = [
   {
     id: 'measles',
     title: 'Phishing Rash!',
-    description: 'A party member clicked too many suspicious links. Now their system is covered in popup infections.',
+    description: 'A party member connected their wallet to too many sketchy sites. Now every dApp is popping up with drainer requests.',
     weight: 5,
     category: 'disease',
     choices: [{
       id: 'antivirus',
-      text: 'Run antivirus scan',
+      text: 'Clear browser cache & revoke all',
       outcome: {
-        description: 'The scan is running. They should recover in a few days.',
+        description: 'Cleaning up the mess. They should recover in a few days.',
         partyEffect: { type: 'status', value: 0, status: 'sick', target: 'random' },
       },
     }],
   },
   {
     id: 'snakebite',
-    title: 'Zero-Day Exploit!',
-    description: 'A party member was hit by an unknown zero-day vulnerability! Critical damage!',
+    title: 'Honeypot Token!',
+    description: 'A party member bought a token they can\'t sell! It was a honeypot. Their portfolio is wrecked.',
     weight: 3,
     category: 'disease',
     choices: [{
       id: 'patch',
-      text: 'Emergency hotfix',
+      text: 'Accept the L and move on',
       outcome: {
-        description: 'The emergency patch was applied, but the damage was severe.',
+        description: 'The SOL is gone. An expensive lesson in DYOR.',
         partyEffect: { type: 'damage', value: 40, target: 'random' },
       },
     }],
@@ -85,29 +86,29 @@ export const GAME_EVENTS: GameEvent[] = [
   {
     id: 'exhaustion',
     title: 'Burnout!',
-    description: 'A party member has been coding non-stop and is completely burnt out.',
+    description: 'A party member has been chart-watching and aping non-stop. They\'re completely burnt out.',
     weight: 7,
     category: 'disease',
     choices: [{
       id: 'rest',
       text: 'Let them rest',
       outcome: {
-        description: 'Web3 never sleeps, but your party member needs to.',
+        description: 'The market never sleeps, but your party member needs to.',
         partyEffect: { type: 'status', value: 0, status: 'exhausted', target: 'random' },
       },
     }],
   },
   {
     id: 'broken_leg',
-    title: 'Hardware Crash!',
-    description: 'A party member\'s main rig has completely crashed. They\'re injured and unable to work.',
+    title: 'Spilled Coffee on Laptop!',
+    description: 'A party member spilled their energy drink right onto their keyboard. They\'re out of commission.',
     weight: 4,
     category: 'disease',
     choices: [{
       id: 'fix',
-      text: 'Attempt repairs',
+      text: 'Dry it out with rice',
       outcome: {
-        description: 'They\'re patching things together, but it\'ll take time to fully recover.',
+        description: 'The classic rice trick. It\'ll take time but they\'ll be back.',
         partyEffect: { type: 'status', value: 0, status: 'injured', target: 'random' },
       },
     }],
@@ -116,24 +117,24 @@ export const GAME_EVENTS: GameEvent[] = [
   // ==================== BREAKDOWNS ====================
   {
     id: 'broken_wheel',
-    title: 'GPU Failure!',
-    description: 'One of your validator GPUs has burned out from the heat!',
+    title: 'Laptop Charger Died!',
+    description: 'Your laptop charger just stopped working. Battery is draining fast!',
     weight: 5,
     category: 'breakdown',
     choices: [
       {
         id: 'use_spare',
-        text: 'Use a spare GPU',
+        text: 'Use a backup charger',
         outcome: {
-          description: 'Good thing you brought spares. The GPU has been replaced.',
+          description: 'Good thing you brought spares. Back in business.',
           inventoryChanges: { spareWheels: -1 },
         },
       },
       {
         id: 'try_fix',
-        text: 'Try to fix it (takes a day)',
+        text: 'Try to fix the cable (takes a day)',
         outcome: {
-          description: 'You spent a day trying to repair it. 50/50 chance it holds.',
+          description: 'You spent a day with electrical tape. 50/50 it holds.',
           daysLost: 1,
         },
       },
@@ -141,24 +142,24 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'broken_axle',
-    title: 'SSD Failure!',
-    description: 'Your storage drive has corrupted! Data is at risk!',
+    title: 'Wallet Compromised!',
+    description: 'Your hot wallet is showing suspicious transactions. Someone has access!',
     weight: 4,
     category: 'breakdown',
     choices: [
       {
         id: 'use_spare',
-        text: 'Swap in a spare SSD',
+        text: 'Move funds to hardware wallet',
         outcome: {
-          description: 'The spare SSD saved the day. Data is safe.',
+          description: 'Your hardware wallet saved the day. Funds are safe.',
           inventoryChanges: { spareAxles: -1 },
         },
       },
       {
         id: 'try_fix',
-        text: 'Attempt data recovery (takes 2 days)',
+        text: 'Try to secure the wallet (takes 2 days)',
         outcome: {
-          description: 'You spent 2 days recovering data. Some was lost.',
+          description: 'You spent 2 days rotating keys and revoking. Some ramen was lost in the chaos.',
           inventoryChanges: { food: -50 },
           daysLost: 2,
         },
@@ -167,24 +168,24 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'broken_tongue',
-    title: 'Power Supply Failure!',
-    description: 'Your power supply blew! Your whole setup is dark!',
+    title: 'Phone Bricked!',
+    description: 'Your phone just died and won\'t turn back on. No Phantom, no Jupiter, nothing!',
     weight: 4,
     category: 'breakdown',
     choices: [
       {
         id: 'use_spare',
-        text: 'Use a spare PSU',
+        text: 'Switch to a burner phone',
         outcome: {
-          description: 'The backup PSU is in. Crisis averted.',
+          description: 'The burner phone is in. Crisis averted.',
           inventoryChanges: { spareTongues: -1 },
         },
       },
       {
         id: 'try_fix',
-        text: 'Try to jury-rig it (takes a day)',
+        text: 'Try to revive it (takes a day)',
         outcome: {
-          description: 'You cobbled together a fix. It\'s not pretty, but it works.',
+          description: 'You held down every button combo known to man. It\'s alive... barely.',
           daysLost: 1,
         },
       },
@@ -194,23 +195,23 @@ export const GAME_EVENTS: GameEvent[] = [
   // ==================== WEATHER ====================
   {
     id: 'network_storm',
-    title: 'Network Storm!',
-    description: 'A massive DDoS storm has rolled in! Transactions are failing left and right.',
+    title: 'Solana Network Congestion!',
+    description: 'Transactions are failing left and right! The whole network is jammed.',
     weight: 6,
     category: 'weather',
     choices: [{
       id: 'wait',
-      text: 'Wait for the storm to pass',
+      text: 'Wait for the congestion to pass',
       outcome: {
-        description: 'The storm lasted a full day. You couldn\'t move.',
+        description: 'The network was clogged all day. No trades went through.',
         daysLost: 1,
       },
     }],
   },
   {
     id: 'heavy_congestion',
-    title: 'Heavy Network Congestion!',
-    description: 'Everyone is minting NFTs and the network is grinding to a halt.',
+    title: 'Hot Mint Going Live!',
+    description: 'Everyone is minting the same NFT collection and gas fees are through the roof!',
     weight: 7,
     category: 'weather',
     choices: [
@@ -218,7 +219,7 @@ export const GAME_EVENTS: GameEvent[] = [
         id: 'wait',
         text: 'Wait it out',
         outcome: {
-          description: 'You lost a day waiting for the network to clear.',
+          description: 'You lost a day waiting for fees to normalize.',
           daysLost: 1,
         },
       },
@@ -226,7 +227,7 @@ export const GAME_EVENTS: GameEvent[] = [
         id: 'priority',
         text: 'Pay priority fees',
         outcome: {
-          description: 'Your transactions went through, but at a steep cost.',
+          description: 'Your transactions went through, but those Jito tips added up.',
           inventoryChanges: { sol: -8 },
         },
       },
@@ -235,14 +236,14 @@ export const GAME_EVENTS: GameEvent[] = [
   {
     id: 'bear_winter',
     title: 'Crypto Winter!',
-    description: 'A sudden bear market has frozen the ecosystem. Travel is slow and morale is low.',
+    description: 'A sudden bear market has frozen the ecosystem. Charts are red, timeline is sad, and vibes are dead.',
     weight: 4,
     category: 'weather',
     choices: [{
       id: 'push_through',
-      text: 'Push through the cold',
+      text: 'Diamond hands through the cold',
       outcome: {
-        description: 'The crypto winter chills your party to the bone.',
+        description: 'The crypto winter tests your resolve. Morale drops, hoodies are wearing thin.',
         healthChange: -10,
         inventoryChanges: { clothing: -1 },
       },
@@ -253,7 +254,7 @@ export const GAME_EVENTS: GameEvent[] = [
   {
     id: 'thief',
     title: 'Wallet Drained!',
-    description: 'A hacker exploited a vulnerability in camp while you slept. SOL was stolen!',
+    description: 'You approved a malicious transaction and SOL was siphoned out while you slept!',
     weight: 5,
     category: 'theft',
     choices: [{
@@ -267,30 +268,30 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'ox_stolen',
-    title: 'Validator Hijacked!',
-    description: 'Someone has taken control of one of your validators while you weren\'t looking!',
+    title: 'Laptop Stolen!',
+    description: 'Someone swiped your laptop from the coffee shop while you were grabbing a refill!',
     weight: 4,
     category: 'theft',
     choices: [{
       id: 'accept',
-      text: 'Rotate the keys',
+      text: 'Remote wipe it',
       outcome: {
-        description: 'You lost a validator but secured the rest. Always rotate your keys.',
+        description: 'You lost a laptop but wiped it remotely. At least they can\'t access your wallets.',
         inventoryChanges: { oxen: -1 },
       },
     }],
   },
   {
     id: 'fire',
-    title: 'Server Room Fire!',
-    description: 'A fire broke out in your server rack! Supplies are being destroyed!',
+    title: 'Discord Server Hacked!',
+    description: 'Your Discord got compromised! Scam links were posted and some party members clicked them.',
     weight: 3,
     category: 'theft',
     choices: [{
       id: 'extinguish',
-      text: 'Put out the fire!',
+      text: 'Do damage control!',
       outcome: {
-        description: 'You saved what you could, but some supplies were destroyed.',
+        description: 'You saved what you could, but some supplies were lost to the scam.',
         inventoryChanges: { food: -100, clothing: -2, ammunition: -5 },
       },
     }],
@@ -299,24 +300,24 @@ export const GAME_EVENTS: GameEvent[] = [
   // ==================== TRAIL HAZARDS ====================
   {
     id: 'bad_water',
-    title: 'Corrupted Data Stream!',
-    description: 'The data you\'re processing is corrupted. Using it could be dangerous.',
+    title: 'Fake Token Contract!',
+    description: 'The token you\'re about to buy has a suspicious contract. Could be a rug.',
     weight: 6,
     category: 'trail',
     choices: [
       {
         id: 'use_anyway',
-        text: 'Process it anyway (risky)',
+        text: 'Ape in anyway (risky)',
         outcome: {
-          description: 'The corrupted data caused problems. Several party members feel ill.',
+          description: 'The contract was sketchy. Several party members got rekt.',
           healthChange: -15,
         },
       },
       {
         id: 'skip',
-        text: 'Find clean data (costs a day)',
+        text: 'DYOR and find another play (costs a day)',
         outcome: {
-          description: 'You found a clean data source, but lost time.',
+          description: 'You did your research and dodged a bullet, but lost time.',
           daysLost: 1,
         },
       },
@@ -324,30 +325,30 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'rough_trail',
-    title: 'Rough Code Path!',
-    description: 'The trail ahead is full of spaghetti code and technical debt. Progress is slow.',
+    title: 'Slow WiFi!',
+    description: 'The WiFi at this stop is absolute garbage. Everything is loading at a crawl.',
     weight: 7,
     category: 'trail',
     choices: [{
       id: 'push',
-      text: 'Push through carefully',
+      text: 'Tether from your phone',
       outcome: {
-        description: 'The rough path slowed you down and wore out your equipment.',
+        description: 'Mobile data saved you, but it ate through your data plan. Extra ramen consumed from stress.',
         inventoryChanges: { food: -20 },
       },
     }],
   },
   {
     id: 'lost_trail',
-    title: 'Lost Connection!',
-    description: 'Your GPS signal dropped and you\'ve gone off-route. The trail markers are nowhere to be found.',
+    title: 'Lost the Alpha!',
+    description: 'Your alpha group went private and you got kicked. Now you\'re flying blind.',
     weight: 4,
     category: 'trail',
     choices: [{
       id: 'search',
-      text: 'Search for the trail',
+      text: 'Search for new alpha',
       outcome: {
-        description: 'You wandered for a while before finding the path again.',
+        description: 'You spent time finding a new group. The ramen supply took a hit.',
         daysLost: 2,
         inventoryChanges: { food: -30 },
       },
@@ -355,30 +356,30 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'no_grass',
-    title: 'No Bandwidth Available!',
-    description: 'The local network is completely saturated. Your validators can\'t sync.',
+    title: 'No WiFi Zone!',
+    description: 'You\'ve hit a dead zone. No internet, no trades, no chart-watching.',
     weight: 5,
     category: 'trail',
     choices: [{
       id: 'keep_going',
-      text: 'Use cached data',
+      text: 'Use cached pages and hope',
       outcome: {
-        description: 'Your validators are running on cached data. Performance suffers.',
+        description: 'Your laptops are useless without WiFi. Ramen is consumed in frustration.',
         inventoryChanges: { food: -40 },
       },
     }],
   },
   {
     id: 'ox_wander',
-    title: 'Validator Went Offline!',
-    description: 'One of your validators wandered off the network and won\'t respond to pings.',
+    title: 'Lost Your Phone!',
+    description: 'One of your devices slipped out of your pocket somewhere. Can\'t find it!',
     weight: 5,
     category: 'trail',
     choices: [{
       id: 'search',
-      text: 'Search for the validator',
+      text: 'Retrace your steps',
       outcome: {
-        description: 'You spent a day hunting for the rogue node. Found it eventually.',
+        description: 'You spent a day hunting for it. Found it wedged in a couch cushion.',
         daysLost: 1,
       },
     }],
@@ -402,16 +403,16 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'find_abandoned',
-    title: 'Abandoned Server Rack!',
-    description: 'You found an abandoned server rack on the side of the trail. Someone didn\'t make it.',
+    title: 'Abandoned Degen Setup!',
+    description: 'You found someone\'s abandoned trading setup on the side of the trail. Laptops, ramen, the works.',
     weight: 5,
     category: 'positive',
     choices: [
       {
         id: 'search',
-        text: 'Search for usable parts',
+        text: 'Grab what you can',
         outcome: {
-          description: 'You salvaged some useful supplies!',
+          description: 'You salvaged some ramen and a hoodie! Score.',
           inventoryChanges: { food: 50, clothing: 1 },
         },
       },
@@ -419,15 +420,15 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'wild_fruit',
-    title: 'Open Source Bounty!',
-    description: 'You found an unclaimed open-source bounty posted on the trail. Free bandwidth!',
+    title: 'Free Ramen Drop!',
+    description: 'A ramen brand is doing a promo on the trail. Free samples for everyone!',
     weight: 6,
     category: 'positive',
     choices: [{
       id: 'claim',
-      text: 'Claim the bounty',
+      text: 'Load up on free ramen',
       outcome: {
-        description: 'Free bandwidth! The open-source community provides.',
+        description: 'Free ramen! The degen community provides.',
         inventoryChanges: { food: 30 },
       },
     }],
@@ -435,39 +436,39 @@ export const GAME_EVENTS: GameEvent[] = [
   {
     id: 'staking_rewards',
     title: 'Staking Rewards!',
-    description: 'Your validators earned epoch rewards. Passive income hits different on the trail.',
+    description: 'Your staked SOL earned some juicy epoch rewards. Passive income hits different.',
     weight: 7,
     category: 'positive',
     choices: [{
       id: 'collect',
       text: 'Collect rewards',
       outcome: {
-        description: 'Sweet passive income. Your validators earned their keep.',
+        description: 'Sweet passive income. Your staked SOL earned its keep.',
         inventoryChanges: { sol: 8 },
       },
     }],
   },
   {
     id: 'hackathon',
-    title: 'Hackathon Campfire!',
-    description: 'Fellow builders gathered around a campfire to hack on projects. The vibes are immaculate.',
+    title: 'Degen Meetup!',
+    description: 'Fellow degens are gathered around sharing alpha and grilling. The vibes are immaculate.',
     weight: 5,
     category: 'positive',
     choices: [
       {
         id: 'join',
-        text: 'Join the hackathon',
+        text: 'Join and share alpha',
         outcome: {
-          description: 'You built something cool and won a bounty!',
+          description: 'You shared some plays and got tipped! Community is everything.',
           inventoryChanges: { sol: 10 },
           partyEffect: { type: 'heal', value: 10, target: 'all' },
         },
       },
       {
         id: 'rest',
-        text: 'Just enjoy the vibes',
+        text: 'Just vibe and eat',
         outcome: {
-          description: 'Sometimes the best code is no code. Everyone feels refreshed.',
+          description: 'Sometimes the best trade is no trade. Everyone feels refreshed.',
           partyEffect: { type: 'heal', value: 15, target: 'all' },
         },
       },
@@ -501,24 +502,24 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'whale_trade',
-    title: 'Whale Encounter!',
-    description: 'A crypto whale wants to buy your validators at a premium. Tempting offer.',
+    title: 'Whale Wants Your Laptops!',
+    description: 'A crypto whale wants to buy your trading rigs at a premium. Tempting offer.',
     weight: 4,
     category: 'choice',
     choices: [
       {
         id: 'sell',
-        text: 'Sell 2 validators for 40 SOL',
+        text: 'Sell 2 laptops for 40 SOL',
         outcome: {
-          description: 'Deal done. You\'re richer but weaker.',
+          description: 'Deal done. You\'re richer but slower.',
           inventoryChanges: { sol: 40, oxen: -2 },
         },
       },
       {
         id: 'decline',
-        text: 'Keep your validators',
+        text: 'Keep your rigs',
         outcome: {
-          description: 'Decentralization matters more than a quick buck.',
+          description: 'You need every laptop you\'ve got for this journey.',
         },
       },
     ],
@@ -526,23 +527,23 @@ export const GAME_EVENTS: GameEvent[] = [
   {
     id: 'trader',
     title: 'Traveling Trader!',
-    description: 'A fellow traveler wants to trade. They have supplies you might need.',
+    description: 'A fellow degen wants to trade. They\'ve got supplies you might need.',
     weight: 6,
     category: 'choice',
     choices: [
       {
         id: 'trade_food',
-        text: 'Trade 1 security patch for 80 bandwidth',
+        text: 'Trade 1 hoodie for 80 ramen packs',
         outcome: {
-          description: 'A fair trade. Bandwidth for security.',
+          description: 'A fair trade. Ramen for warmth.',
           inventoryChanges: { clothing: -1, food: 80 },
         },
       },
       {
         id: 'trade_ammo',
-        text: 'Trade 3 bug bounty kits for 1 spare GPU',
+        text: 'Trade 3 alpha passes for 1 backup charger',
         outcome: {
-          description: 'Spare parts are hard to find out here. Good trade.',
+          description: 'Spare chargers are hard to find out here. Good trade.',
           inventoryChanges: { ammunition: -3, spareWheels: 1 },
         },
       },
@@ -556,14 +557,14 @@ export const GAME_EVENTS: GameEvent[] = [
   {
     id: 'rug_pull',
     title: 'Rug Pull!',
-    description: 'That "guaranteed" yield protocol just pulled the rug. Liquidity drained instantly.',
+    description: 'That "guaranteed" memecoin just rugged. Liquidity drained. Dev did a mass dump.',
     weight: 5,
     category: 'choice',
     choices: [{
       id: 'accept',
-      text: 'Accept the loss',
+      text: 'Accept the L',
       outcome: {
-        description: 'Another one bites the dust. At least you learned a lesson.',
+        description: 'Another rug. At least the memes were good while it lasted.',
         inventoryChanges: { sol: -15 },
         healthChange: -5,
       },
@@ -571,16 +572,16 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'gas_war',
-    title: 'Gas War!',
-    description: 'A hot mint just started and fees are skyrocketing!',
+    title: 'Mint War!',
+    description: 'A hyped NFT just dropped and everyone\'s fighting for a spot!',
     weight: 5,
     category: 'choice',
     choices: [
       {
         id: 'compete',
-        text: 'Join the gas war',
+        text: 'Join the mint war',
         outcome: {
-          description: 'You got in! Cost you, but you minted something rare.',
+          description: 'You got in! Cost you in priority fees, but you minted something rare.',
           inventoryChanges: { sol: -12 },
           partyEffect: { type: 'heal', value: 10, target: 'all' },
         },

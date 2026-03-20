@@ -53,7 +53,7 @@ export function calculateScore(state: GameState): number {
   const inv = state.inventory
   const supplyPoints =
     50 +                                    // wagon (always 50)
-    inv.oxen * 4 +                          // 4 per validator
+    inv.oxen * 4 +                          // 4 per laptop
     (inv.spareWheels + inv.spareAxles + inv.spareTongues) * 2 +
     inv.clothing * 2 +
     Math.floor(inv.ammunition / 1) +        // 1 per box
@@ -125,8 +125,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         phase: 'general_store',
         startEpoch: action.epoch,
         messageLog: [
-          msg(`Welcome to Matt's DeFi Supply, ${state.party[0]?.name || 'traveler'}!`, 'system', 0),
-          msg('Buy what you need for the trail. You can also buy supplies at forts along the way (but prices go up).', 'info', 0),
+          msg(`Welcome to Matt's Supply Shop, ${state.party[0]?.name || 'traveler'}!`, 'system', 0),
+          msg('Grab what you need for the trail. You can buy more at forts along the way (but prices go up).', 'info', 0),
         ],
       }
     }
@@ -163,10 +163,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Warnings if under-prepared
       const warnings: MessageEntry[] = []
       if (state.inventory.oxen < 2) {
-        warnings.push(msg('Warning: You have very few validators. Travel will be slow!', 'warning', 1))
+        warnings.push(msg('Warning: You barely have any laptops. Travel will be slow!', 'warning', 1))
       }
       if (state.inventory.food < 200) {
-        warnings.push(msg('Warning: You may not have enough bandwidth for the journey!', 'warning', 1))
+        warnings.push(msg('Warning: You may not have enough ramen for the journey!', 'warning', 1))
       }
 
       return {
@@ -230,7 +230,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       // Check for starvation
       if (newFood <= 0) {
-        messages.push(msg('You have run out of bandwidth! Your party is starving!', 'danger', newDay))
+        messages.push(msg('You\'re out of ramen! Your party is starving!', 'danger', newDay))
       }
 
       // Check deaths
@@ -305,7 +305,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state, phase: 'gameOver', day: newDay, distanceTraveled: newDistance,
           inventory: newInventory, party: newParty, health: newHealth,
           currentLocation: newLocation, nextLocation, currentWeather: weather,
-          messageLog: [...messages, msg('You have no validators left. The network has halted.', 'danger', newDay)],
+          messageLog: [...messages, msg('You have no laptops left. Can\'t trade, can\'t move. It\'s over.', 'danger', newDay)],
         }
         return { ...finalState, score: calculateScore(finalState) }
       }
@@ -327,7 +327,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Health/resource warnings
       if (newHealth === 'poor') messages.push(msg('Your party\'s health is poor. Consider resting.', 'warning', newDay))
       if (newHealth === 'very_poor') messages.push(msg('Your party\'s health is very poor! Rest immediately!', 'danger', newDay))
-      if (newFood < 100) messages.push(msg('Warning: Bandwidth running low!', 'warning', newDay))
+      if (newFood < 100) messages.push(msg('Warning: Ramen supply running low!', 'warning', newDay))
       if (newInventory.sol < 10) messages.push(msg('Warning: SOL reserves low!', 'warning', newDay))
 
       return {
@@ -437,7 +437,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             if (Math.random() < 0.4) {
               const lostFood = Math.round(Math.random() * 50 + 20)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
-              messages.push(msg(`The crossing was rough! You lost ${lostFood} units of bandwidth to the current.`, 'warning', state.day))
+              messages.push(msg(`The crossing was rough! You lost ${lostFood} ramen packs to the current.`, 'warning', state.day))
             } else {
               messages.push(msg('You made it across safely, but it was close!', 'success', state.day))
             }
@@ -448,7 +448,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
               newParty = result.party
               const lostFood = Math.round(Math.random() * 100 + 50)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
-              messages.push(msg(`Disaster! The current was too strong. ${result.affectedName} nearly drowned! Lost ${lostFood} bandwidth.`, 'danger', state.day))
+              messages.push(msg(`Disaster! The current was too strong. ${result.affectedName} nearly drowned! Lost ${lostFood} ramen.`, 'danger', state.day))
             } else {
               const lostFood = Math.round(Math.random() * 30 + 10)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
@@ -561,12 +561,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, phase: 'landmark' }
     }
 
-    // ==================== HUNTING (BUG BOUNTY) ====================
+    // ==================== HUNTING (ALPHA SCOUTING) ====================
     case 'START_HUNTING': {
       if (state.inventory.ammunition <= 0) {
         return {
           ...state,
-          messageLog: [...state.messageLog, msg('You have no bug bounty kits!', 'warning', state.day)],
+          messageLog: [...state.messageLog, msg('You have no alpha passes!', 'warning', state.day)],
         }
       }
       return { ...state, phase: 'hunting', huntingAmmoUsed: 0, huntingFoodGained: 0 }
@@ -579,10 +579,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       // Simple hunting — random reward per shot
       const targets: Record<string, { food: number; chance: number; name: string }> = {
-        rabbit: { food: 5, chance: 0.8, name: 'Minor Bug' },
-        deer: { food: 35, chance: 0.5, name: 'Medium Vulnerability' },
-        bear: { food: 80, chance: 0.25, name: 'Critical Exploit' },
-        buffalo: { food: 100, chance: 0.15, name: 'Zero-Day' },
+        rabbit: { food: 5, chance: 0.8, name: 'Shitcoin Flip' },
+        deer: { food: 35, chance: 0.5, name: 'NFT Snipe' },
+        bear: { food: 80, chance: 0.25, name: 'Airdrop Farm' },
+        buffalo: { food: 100, chance: 0.15, name: 'Gem Find' },
       }
 
       const target = targets[action.targetId] || targets.rabbit
@@ -631,7 +631,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         huntingFoodGained: 0,
         messageLog: [
           ...state.messageLog,
-          msg(`Bug bounty hunt complete! Gained ${foodGained} bandwidth, used ${boxesUsed} kit(s).`, 'info', state.day),
+          msg(`Alpha hunt complete! Gained ${foodGained} ramen, used ${boxesUsed} pass(es).`, 'info', state.day),
         ],
       }
     }

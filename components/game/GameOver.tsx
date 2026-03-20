@@ -62,8 +62,8 @@ export function GameOver({
         <StatBox label="Distance" value={`${state.distanceTraveled}/${state.totalDistance}`} />
         <StatBox label="Survivors" value={`${alive}/${state.party.length}`} />
         <StatBox label="SOL Left" value={`◎ ${inv.sol.toFixed(0)}`} />
-        <StatBox label="Validators" value={inv.oxen.toString()} />
-        <StatBox label="Bandwidth" value={inv.food.toString()} />
+        <StatBox label="Laptops" value={inv.oxen.toString()} />
+        <StatBox label="Ramen" value={inv.food.toString()} />
       </div>
 
       {/* Party */}

@@ -9,7 +9,7 @@ export function createParty(names: string[]): PartyMember[] {
   }))
 }
 
-export const DEFAULT_NAMES = ['Satoshi', 'Vitalik', 'Anatoly', 'Beeple', 'Do Kwon\'t']
+export const DEFAULT_NAMES = ['toly', 'Ansem', 'Bonk Dog', 'GigaBrain', 'Ser Cope']
 
 export function updatePartyHealth(
   party: PartyMember[],

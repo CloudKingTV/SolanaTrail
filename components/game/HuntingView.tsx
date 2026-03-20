@@ -13,10 +13,10 @@ interface HuntingViewProps {
 }
 
 const TARGETS = [
-  { id: 'rabbit', name: 'Minor Bug', icon: '🐛', reward: 5, difficulty: 'Easy' },
-  { id: 'deer', name: 'Medium Vuln', icon: '🦌', reward: 35, difficulty: 'Medium' },
-  { id: 'bear', name: 'Critical Exploit', icon: '🐻', reward: 80, difficulty: 'Hard' },
-  { id: 'buffalo', name: 'Zero-Day', icon: '🦬', reward: 100, difficulty: 'Very Hard' },
+  { id: 'rabbit', name: 'Shitcoin Flip', icon: '🪙', reward: 5, difficulty: 'Easy' },
+  { id: 'deer', name: 'NFT Snipe', icon: '🖼️', reward: 35, difficulty: 'Medium' },
+  { id: 'bear', name: 'Airdrop Farm', icon: '🌾', reward: 80, difficulty: 'Hard' },
+  { id: 'buffalo', name: 'Gem Find', icon: '💎', reward: 100, difficulty: 'Very Hard' },
 ]
 
 export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, messages }: HuntingViewProps) {
@@ -27,7 +27,7 @@ export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, mess
       {/* Header */}
       <div className="p-4 border-b border-sol-border text-center space-y-2">
         <h2 className="font-pixel text-xs text-sol-green glow-green">
-          BUG BOUNTY HUNT
+          ALPHA HUNT
         </h2>
         <div className="flex justify-center gap-4 text-xs">
           <div>
@@ -42,7 +42,7 @@ export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, mess
           </div>
         </div>
         <p className="text-[10px] text-sol-muted">
-          Hunt for bugs to earn bandwidth rewards. Max {maxFood} per hunt session.
+          Scout for alpha to earn ramen rewards. Max {maxFood} per session.
         </p>
       </div>
 
@@ -69,7 +69,7 @@ export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, mess
         </div>
 
         <Button variant="secondary" fullWidth onClick={onFinish}>
-          Done Hunting (gain {foodGained} bandwidth)
+          Done Scouting (gain {foodGained} ramen)
         </Button>
       </div>
     </div>

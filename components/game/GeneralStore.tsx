@@ -19,7 +19,7 @@ export function GeneralStore({ inventory, onBuy, onLeave }: GeneralStoreProps) {
       {/* Header */}
       <div className="p-4 border-b border-sol-border text-center">
         <h1 className="font-pixel text-xs text-sol-green glow-green mb-1">
-          MATT&apos;S DEFI SUPPLY
+          MATT&apos;S SUPPLY SHOP
         </h1>
         <p className="text-[10px] text-sol-muted">Genesis Block, Solana</p>
         <div className="mt-2 inline-block px-3 py-1 rounded bg-sol-darker border border-sol-border">
@@ -81,10 +81,10 @@ export function GeneralStore({ inventory, onBuy, onLeave }: GeneralStoreProps) {
       {/* Current inventory summary */}
       <div className="p-4 border-t border-sol-border space-y-3">
         <div className="grid grid-cols-4 gap-1 text-[10px] text-center">
-          <div><span className="text-sol-muted">Validators</span><br /><span className="font-bold">{inventory.oxen}</span></div>
-          <div><span className="text-sol-muted">Bandwidth</span><br /><span className="font-bold">{inventory.food}</span></div>
-          <div><span className="text-sol-muted">Security</span><br /><span className="font-bold">{inventory.clothing}</span></div>
-          <div><span className="text-sol-muted">Bug Kits</span><br /><span className="font-bold">{inventory.ammunition}</span></div>
+          <div><span className="text-sol-muted">Laptops</span><br /><span className="font-bold">{inventory.oxen}</span></div>
+          <div><span className="text-sol-muted">Ramen</span><br /><span className="font-bold">{inventory.food}</span></div>
+          <div><span className="text-sol-muted">Hoodies</span><br /><span className="font-bold">{inventory.clothing}</span></div>
+          <div><span className="text-sol-muted">Alpha</span><br /><span className="font-bold">{inventory.ammunition}</span></div>
         </div>
 
         <Button variant="secondary" fullWidth onClick={onLeave}>

@@ -91,7 +91,7 @@ export function TravelView({
             😴 Rest
           </Button>
           <Button variant="ghost" fullWidth onClick={onHunt} disabled={state.inventory.ammunition <= 0} className="text-[10px] px-2">
-            🔫 Hunt
+            🎫 Scout
           </Button>
           <Button variant="secondary" fullWidth onClick={onTrade} disabled={!canTrade} className="text-[10px] px-2">
             🏪 Trade
