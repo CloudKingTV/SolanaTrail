@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-sol-green: #14F195;
+  --color-sol-purple: #9945FF;
+  --color-sol-blue: #00D1FF;
+  --color-sol-dark: #0a0a0f;
+  --color-sol-darker: #050508;
+  --color-sol-card: #111118;
+  --color-sol-border: #1e1e2e;
+  --color-sol-text: #e0e0e0;
+  --color-sol-muted: #6b7280;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-success: #14F195;
+
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-family: var(--font-mono);
+  background-color: var(--color-sol-darker);
+  color: var(--color-sol-text);
+}
+
+body {
+  min-height: 100dvh;
+  overscroll-behavior: none;
+}
+
+/* Pixel font for headers */
+.font-pixel {
+  font-family: var(--font-pixel);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-sol-darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-sol-border);
+  border-radius: 2px;
+}
+
+/* Glow effects */
+.glow-green {
+  text-shadow: 0 0 10px rgba(20, 241, 149, 0.5), 0 0 20px rgba(20, 241, 149, 0.2);
+}
+
+.glow-purple {
+  text-shadow: 0 0 10px rgba(153, 69, 255, 0.5), 0 0 20px rgba(153, 69, 255, 0.2);
+}
+
+/* Pulse animation for warnings */
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse-warning {
+  animation: pulse-warning 1.5s ease-in-out infinite;
+}
+
+/* Scanline effect */
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
+}
+
+/* Travel animation */
+@keyframes travel-dots {
+  0% { content: '.'; }
+  33% { content: '..'; }
+  66% { content: '...'; }
+}
+
+/* Button press effect */
+.btn-press:active {
+  transform: scale(0.95);
+  transition: transform 0.1s;
+}
