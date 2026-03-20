@@ -19,6 +19,7 @@ export function GameOver({
   const isVictory = state.phase === 'victory'
   const alive = getAliveCount(state.party)
   const inv = state.inventory
+  const isBuilders = state.teamType === 'builders'
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] p-6 text-center space-y-5 overflow-y-auto">
@@ -26,10 +27,15 @@ export function GameOver({
       <div className="space-y-2">
         {isVictory ? (
           <>
-            <div className="text-4xl">🎉</div>
-            <h1 className="font-pixel text-lg text-sol-green glow-green">MAINNET LAUNCHED!</h1>
+            <div className="text-4xl">{isBuilders ? '🚀' : '🎉'}</div>
+            <h1 className="font-pixel text-lg text-sol-green glow-green">
+              {isBuilders ? 'PROJECT LAUNCHED!' : 'MAINNET REACHED!'}
+            </h1>
             <p className="text-sm text-sol-text">
-              Your protocol is live. Congratulations, {state.party[0]?.name}!
+              {isBuilders
+                ? `Your project is live on Mainnet! Congratulations, ${state.party[0]?.name}!`
+                : `Your crew navigated the entire Solana ecosystem! Well done, ${state.party[0]?.name}!`
+              }
             </p>
           </>
         ) : (
@@ -53,6 +59,9 @@ export function GameOver({
               ({state.profession.scoreMultiplier}x multiplier as {state.profession.name})
             </div>
           )}
+          <div className="text-[10px] text-sol-muted mt-1">
+            {isBuilders ? 'Bonus: Resources remaining (runway)' : 'Bonus: Party health (survivors)'}
+          </div>
         </div>
       )}
 
@@ -62,8 +71,8 @@ export function GameOver({
         <StatBox label="Distance" value={`${state.distanceTraveled}/${state.totalDistance}`} />
         <StatBox label="Survivors" value={`${alive}/${state.party.length}`} />
         <StatBox label="SOL Left" value={`◎ ${inv.sol.toFixed(0)}`} />
-        <StatBox label="Laptops" value={inv.oxen.toString()} />
-        <StatBox label="Ramen" value={inv.food.toString()} />
+        <StatBox label="Phones" value={inv.oxen.toString()} />
+        <StatBox label="Data" value={`${inv.food} GB`} />
       </div>
 
       {/* Party */}
@@ -77,7 +86,10 @@ export function GameOver({
                 m.status === 'dead' ? 'opacity-50' : ''
               }`}
             >
-              <span>{m.isLeader ? '⭐ ' : ''}{m.name}</span>
+              <span>
+                {m.isLeader ? '⭐ ' : ''}{m.name}
+                {m.role && <span className="text-sol-muted ml-1">({m.role})</span>}
+              </span>
               <span className={m.status === 'dead' ? 'text-danger' : 'text-sol-green'}>
                 {m.status === 'dead' ? 'Lost' : `HP: ${m.health}`}
               </span>
@@ -90,7 +102,7 @@ export function GameOver({
       <div className="w-full max-w-xs space-y-3">
         {isVictory && onMintNFT && (
           <Button variant="secondary" fullWidth onClick={onMintNFT} disabled={isMinting}>
-            {isMinting ? 'Minting...' : '🏆 Mint Achievement NFT'}
+            {isMinting ? 'Minting...' : isBuilders ? '🚀 Mint Project Launch NFT' : '🏆 Mint Explorer Badge NFT'}
           </Button>
         )}
         {onSubmitScore && (

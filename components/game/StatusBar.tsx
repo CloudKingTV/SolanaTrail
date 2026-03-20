@@ -12,11 +12,19 @@ interface StatusBarProps {
 }
 
 const weatherIcons: Record<string, string> = {
-  clear: '☀️',
-  rainy: '🌧️',
-  cold: '🥶',
-  hot: '🔥',
-  snowy: '❄️',
+  bull: '📈',
+  crab: '🦀',
+  bear: '📉',
+  fomo: '🔥',
+  winter: '❄️',
+}
+
+const weatherLabels: Record<string, string> = {
+  bull: 'Bull',
+  crab: 'Crab',
+  bear: 'Bear',
+  fomo: 'FOMO',
+  winter: 'Winter',
 }
 
 const healthColors: Record<string, string> = {
@@ -31,10 +39,10 @@ export function StatusBar({ inventory, day, distance, totalDistance, health, wea
 
   return (
     <div className="bg-sol-card border-b border-sol-border p-3 space-y-2">
-      {/* Day + Weather + Health */}
+      {/* Day + Market + Health */}
       <div className="flex items-center justify-between text-[10px]">
         <span className="font-pixel text-sol-muted">DAY {day}</span>
-        <span>{weatherIcons[weather] || '☀️'} {weather}</span>
+        <span>{weatherIcons[weather] || '📈'} {weatherLabels[weather] || weather}</span>
         <span className={healthColors[health] || 'text-sol-text'}>
           Health: {health.replace('_', ' ')}
         </span>
@@ -60,19 +68,19 @@ export function StatusBar({ inventory, day, distance, totalDistance, health, wea
           </span>
         </div>
         <div>
-          <span className="text-sol-purple">💻</span>
+          <span>📱</span>
           <span className={`font-semibold ml-1 ${inventory.oxen < 2 ? 'text-danger' : 'text-sol-text'}`}>
             {inventory.oxen}
           </span>
         </div>
         <div>
-          <span className="text-sol-blue">🍜</span>
+          <span>📶</span>
           <span className={`font-semibold ml-1 ${inventory.food < 100 ? 'text-danger' : 'text-sol-text'}`}>
             {inventory.food}
           </span>
         </div>
         <div>
-          <span className="text-warning">🧥</span>
+          <span>🛡️</span>
           <span className="font-semibold ml-1 text-sol-text">{inventory.clothing}</span>
         </div>
       </div>

@@ -1,84 +1,132 @@
 'use client'
 
 import { useState } from 'react'
+import { GameMode } from '@/lib/game/types'
 
 interface TutorialProps {
+  mode: GameMode
   onComplete: () => void
 }
 
-const TUTORIAL_STEPS = [
+const NEWCOMER_STEPS = [
+  {
+    title: 'WELCOME TO SOLANA',
+    icon: '◎',
+    content: [
+      '**Solana** is a fast blockchain where people trade tokens, collect NFTs, and build apps. Think of it as a digital economy.',
+      'In this game, you and 4 teammates are journeying through the **Solana ecosystem** — visiting real protocols and surviving the wild world of crypto.',
+      'Your goal: make it from **Genesis Block** to **Mainnet Launch** — 2,000 blocks away. Don\'t worry, we\'ll explain everything along the way!',
+    ],
+  },
+  {
+    title: 'YOUR JOURNEY',
+    icon: '🗺️',
+    content: [
+      'You\'ll visit **real Solana protocols** along the way — Phantom (wallets), Jupiter (trading), Raydium (DEX), and more.',
+      'Each stop is a milestone. **Builders** are building a project to launch. **Explorers** are discovering the ecosystem.',
+      'A friendly guide will explain what each protocol does in real life, so you\'ll learn Solana just by playing!',
+    ],
+    tip: 'Pay attention to the guide messages — they explain real Solana concepts you can use outside the game.',
+  },
+  {
+    title: 'YOUR ROLE',
+    icon: '💰',
+    content: [
+      '**Crypto Whale** — 1,600 SOL to start. Easiest mode, but lowest score multiplier (1x).',
+      '**NFT Flipper** — 800 SOL. Medium difficulty, 2x score multiplier.',
+      '**Memecoin Degen** — 400 SOL. Hardest start, but 3x score if you make it!',
+    ],
+    tip: 'SOL is the currency of Solana. In real life, 1 SOL is worth real money. In this game, it\'s your budget for everything.',
+  },
+  {
+    title: 'YOUR SUPPLIES',
+    icon: '🛒',
+    content: [
+      '**Phones** 📱 — Your Seeker devices. Need at least 1 to travel. 6 for max speed.',
+      '**Data** 📶 — Mobile data keeps your crew online. ~100 GB per person. No data = offline.',
+      '**VPNs** 🛡️ — Security protection from hacks and scams. Essential during bear markets.',
+      '**Alpha Passes** 🎫 — Use these to scout for data on the trail.',
+      '**Spare gear** (chargers, hardware wallets, burner phones) — Backups for when things break.',
+    ],
+    tip: 'Prices go up at every stop. Buy as much as you can afford at the start!',
+  },
+  {
+    title: 'ON THE TRAIL',
+    icon: '🏃',
+    content: [
+      '**Pace** controls your speed. Diamond Hands (slow/safe) → Active Trader → Full Degen (fast/dangerous).',
+      '**Rations** control data usage. Well Fed (3 GB/day/person) → On a Budget → Fasting for Gains (1 GB/day).',
+      '**Market conditions** change as you travel: Bull 📈, Crab 🦀, Bear 📉, FOMO 🔥, or Crypto Winter ❄️.',
+      'You can **rest** (heal your crew), **scout** (use alpha passes for data), or **trade** at stops.',
+    ],
+    tip: 'If someone dies, they\'re gone forever. Keep an eye on your party\'s health!',
+  },
+  {
+    title: 'LET\'S GO!',
+    icon: '🚀',
+    content: [
+      'Get your team to **Mainnet Launch** alive. More survivors + more supplies = higher score.',
+      'Random events will test you — airdrops, rug pulls, phone failures, scam links, and more.',
+      'Don\'t worry about knowing everything. The guide will explain as you go. Have fun!',
+    ],
+  },
+]
+
+const VETERAN_STEPS = [
   {
     title: 'WTF IS THIS',
     icon: '◎',
     content: [
-      'ok so basically you and 4 frens are trying to get from **Genesis Block** to **Mainnet Launch**. that\'s 2,000 blocks away.',
-      'think of it like Oregon Trail but everything is crypto. you buy supplies, manage resources, and pray nothing rugs you on the way.',
-      'people in your party can get sick, get rekt, or straight up die. this isn\'t a drill ser.',
+      'you and 4 frens are navigating the Solana ecosystem from **Genesis Block** to **Mainnet Launch**. 2,000 blocks of pure degen survival.',
+      'think Oregon Trail but everything is crypto. rug pulls replace dysentery. your phone dying replaces a broken axle.',
+      'people in your party can get rekt, phished, or straight up lost to the blockchain. this isn\'t a drill ser.',
     ],
   },
   {
-    title: 'PICK YOUR BAG SIZE',
-    icon: '💰',
-    content: [
-      '**Crypto Whale** — 1,600 SOL. ez mode. you\'re rich but your final score gets a measly 1x multiplier.',
-      '**NFT Flipper** — 800 SOL. mid difficulty, 2x score. solid for a first run.',
-      '**Memecoin Degen** — 400 SOL. you\'re basically broke but if you survive? **3x score**. max clout.',
-    ],
-    tip: 'degen mode is hard. like "aping into an unaudited contract at 3am" hard. but the score multiplier is worth it if you make it.',
-  },
-  {
-    title: 'WHAT TO BUY',
+    title: 'YOUR BAG',
     icon: '🛒',
     content: [
-      '**Laptops** — your trading rigs. need 1 minimum to move. 6 for full speed. no laptop = ngmi.',
-      '**Ramen** — you\'re a degen, this is your food. ~100 packs per person or your party starves.',
-      '**Hoodies** — crypto uniform + cold weather protection. 2 per person minimum.',
-      '**Alpha Passes** — use these to hunt for extra ramen on the trail. cheap now, clutch later.',
-      '**Spare gear** (chargers, hardware wallets, burner phones) — for when your stuff breaks. and it will break.',
+      '**Phones** 📱 — your Seeker devices. need 1 to move, 6 for max speed. no phone = ngmi.',
+      '**Data** 📶 — mobile data. ~100 GB per person or your party goes dark.',
+      '**VPNs** 🛡️ — security for bear markets when exploits spike. 2 per person minimum.',
+      '**Alpha Passes** 🎫 — scout for data on the trail. cheap now, clutch later.',
+      '**Spare gear** — portable chargers, hardware wallets, burner phones. trust us, things break.',
     ],
-    tip: 'prices pump at every stop along the trail. buy heavy at the start when it\'s cheap.',
+    tip: 'prices pump at every stop. buy heavy at Genesis Block when it\'s cheap.',
   },
   {
-    title: 'HOW TRAVEL WORKS',
+    title: 'HOW IT WORKS',
     icon: '🏃',
     content: [
-      '**Pace** = how fast you go. steady is chill, grueling is fast but your party\'s health tanks. choose wisely.',
-      '**Rations** = how much ramen your party eats per day. filling keeps everyone healthy. bare bones saves food but people get weak.',
-      'you can **rest** (heals the squad), **hunt** (spend alpha passes to earn ramen), or **trade** at forts along the way.',
+      '**Pace**: Diamond Hands (chill) → Active Trader → Full Degen (fast but your crew suffers).',
+      '**Rations**: how much data your crew burns per day. fasting saves data but health tanks.',
+      'market conditions cycle: Bull 📈, Crab 🦀, Bear 📉, FOMO 🔥, Winter ❄️. VPNs matter in bear/winter.',
+      'random events: airdrops, rugs, phone deaths, scam links, MEV bots — the full CT experience.',
     ],
-    tip: 'if someone in your party dies they\'re gone forever. no respawns. keep that health bar green.',
-  },
-  {
-    title: 'STUFF THAT HAPPENS',
-    icon: '🎲',
-    content: [
-      'random events hit while you travel. airdrops (free sol, lfg), rug pulls (rip your bags), laptop failures, storms, hackers — all of it.',
-      'some events let you **choose** what to do. bad choice = lost supplies or dead frens.',
-      'rivers block your path sometimes. you can try to cross (risky), float across (less risky), pay a ferry (costs sol), or wait it out.',
-    ],
-    tip: 'going faster = more random events. if your party is hurting, slow down ser.',
+    tip: 'going Full Degen = more random events. if your party is down bad, slow it down.',
   },
   {
     title: 'LFG',
     icon: '🚀',
     content: [
-      'get your squad to Mainnet Launch alive. more survivors + more leftover supplies = higher score.',
-      'your role multiplier hits at the end. whale gets 1x, flipper 2x, degen 3x. risk it for the biscuit.',
+      'get your squad to Mainnet alive. more survivors + more leftover supplies = higher score.',
+      'role multiplier hits at the end. whale 1x, flipper 2x, degen 3x. risk it for the biscuit.',
       'wagmi? probably not. but that\'s never stopped a degen before.',
     ],
   },
 ]
 
-export function Tutorial({ onComplete }: TutorialProps) {
+export function Tutorial({ mode, onComplete }: TutorialProps) {
+  const steps = mode === 'newcomer' ? NEWCOMER_STEPS : VETERAN_STEPS
   const [step, setStep] = useState(0)
-  const current = TUTORIAL_STEPS[step]
-  const isLast = step === TUTORIAL_STEPS.length - 1
+  const current = steps[step]
+  const isLast = step === steps.length - 1
 
   return (
     <div className="flex flex-col min-h-[100dvh] p-6">
       {/* Progress dots */}
       <div className="flex justify-center gap-2 mb-6">
-        {TUTORIAL_STEPS.map((_, i) => (
+        {steps.map((_, i) => (
           <div
             key={i}
             className={`w-2 h-2 rounded-full transition-all ${
@@ -138,7 +186,7 @@ export function Tutorial({ onComplete }: TutorialProps) {
             onClick={onComplete}
             className="w-full py-2 text-[10px] text-sol-muted hover:text-sol-text transition-colors"
           >
-            skip (i already know what i\'m doing)
+            {mode === 'newcomer' ? 'skip tutorial' : 'skip (i already know what i\'m doing)'}
           </button>
         )}
       </div>

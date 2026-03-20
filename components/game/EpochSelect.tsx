@@ -7,11 +7,11 @@ interface EpochSelectProps {
 }
 
 const EPOCHS = [
-  { id: 1, name: 'Epoch 1 (Early)', month: 'March', description: 'Cold start. Grass is scarce but you\'ll avoid the late-trail winter.', icon: '🌱' },
-  { id: 2, name: 'Epoch 2', month: 'April', description: 'Still chilly, but the network is warming up.', icon: '🌤️' },
-  { id: 3, name: 'Epoch 3 (Recommended)', month: 'May', description: 'Ideal conditions. Balanced weather for the whole journey.', icon: '☀️' },
-  { id: 4, name: 'Epoch 4', month: 'June', description: 'Warm start, but risk crypto winter at the end.', icon: '🔥' },
-  { id: 5, name: 'Epoch 5 (Late)', month: 'July', description: 'Hot start, high risk of harsh conditions at journey\'s end.', icon: '❄️' },
+  { id: 1, name: 'Epoch 1 (Early)', description: 'Bear market start. Tough conditions early but you\'ll dodge late-trail crypto winter.', icon: '📉' },
+  { id: 2, name: 'Epoch 2', description: 'Crab market. Sideways action but the ecosystem is warming up.', icon: '🦀' },
+  { id: 3, name: 'Epoch 3 (Recommended)', description: 'Bull market conditions. Best balance of market conditions for the whole journey.', icon: '📈' },
+  { id: 4, name: 'Epoch 4', description: 'FOMO season start. Hot early but risk crypto winter at the end.', icon: '🔥' },
+  { id: 5, name: 'Epoch 5 (Late)', description: 'Peak FOMO. Everyone\'s leveraged. High risk of brutal winter at journey\'s end.', icon: '❄️' },
 ]
 
 export function EpochSelect({ onSelect }: EpochSelectProps) {
@@ -24,7 +24,7 @@ export function EpochSelect({ onSelect }: EpochSelectProps) {
         <p className="text-xs text-sol-muted leading-relaxed">
           Which epoch would you like to depart?
           <br />
-          Leaving too early or too late affects weather on the trail.
+          Leaving too early or too late affects market conditions on the trail.
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export function EpochSelect({ onSelect }: EpochSelectProps) {
       </div>
 
       <div className="text-[10px] text-sol-muted text-center">
-        Tip: Epoch 3 (May) gives the best balance of weather conditions.
+        Tip: Epoch 3 gives the best balance of market conditions for your journey.
       </div>
     </div>
   )

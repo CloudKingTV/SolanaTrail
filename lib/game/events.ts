@@ -1,22 +1,24 @@
 import { GameEvent } from './types'
 
 // Events modeled after the classic Oregon Trail's random events
-// Rethemed for everyday Solana degen culture
+// Rethemed for everyday Solana/Seeker user culture
 // Categories: disease, breakdown, weather, theft, trail, positive, choice
 
 export const GAME_EVENTS: GameEvent[] = [
   // ==================== DISEASES ====================
   {
     id: 'dysentery',
-    title: 'Bad Ramen!',
-    description: 'A party member ate some sketchy gas station ramen. They\'re not doing well — the crypto equivalent of dysentery.',
+    title: 'Bad Street Food!',
+    description: 'A party member ate some sketchy food truck tacos at a crypto conference. They\'re not doing well.',
+    veteranTitle: 'Convention Floor Sickness!',
+    veteranDescription: 'Ser ate from the Breakpoint buffet and is down bad. The crypto equivalent of dysentery.',
     weight: 6,
     category: 'disease',
     choices: [{
       id: 'rest',
       text: 'Rest and hydrate',
       outcome: {
-        description: 'They\'re laid up for a day. Should have stuck with the name-brand stuff.',
+        description: 'They\'re laid up for a day. Should have stuck with the hotel restaurant.',
         partyEffect: { type: 'status', value: 0, status: 'sick', target: 'random' },
         daysLost: 1,
       },
@@ -26,6 +28,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'cholera',
     title: 'Scam Link Clicked!',
     description: 'A party member clicked a "free airdrop" link in their DMs. Their wallet is compromised!',
+    newcomerLearn: 'Never click links in your DMs! Scammers impersonate real projects to drain your wallet.',
     weight: 4,
     category: 'disease',
     choices: [{
@@ -41,6 +44,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'typhoid',
     title: 'Doomscrolling Sickness!',
     description: 'A party member has been doomscrolling CT for 48 hours straight. They\'re seeing red candles everywhere.',
+    veteranDescription: 'Ser has been on CT since the FTX news broke and hasn\'t slept. They\'re seeing red candles in their dreams.',
     weight: 4,
     category: 'disease',
     choices: [{
@@ -56,7 +60,8 @@ export const GAME_EVENTS: GameEvent[] = [
   {
     id: 'measles',
     title: 'Phishing Rash!',
-    description: 'A party member connected their wallet to too many sketchy sites. Now every dApp is popping up with drainer requests.',
+    description: 'A party member connected their wallet to too many sketchy sites. Drainer requests keep popping up.',
+    newcomerLearn: 'Be careful what sites you connect your wallet to. Malicious dApps can request permission to drain your funds.',
     weight: 5,
     category: 'disease',
     choices: [{
@@ -72,6 +77,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'snakebite',
     title: 'Honeypot Token!',
     description: 'A party member bought a token they can\'t sell! It was a honeypot. Their portfolio is wrecked.',
+    newcomerLearn: 'A honeypot is a token designed to let you buy but not sell. Always check if a token has sell restrictions before buying.',
     weight: 3,
     category: 'disease',
     choices: [{
@@ -100,13 +106,13 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'broken_leg',
-    title: 'Spilled Coffee on Laptop!',
-    description: 'A party member spilled their energy drink right onto their keyboard. They\'re out of commission.',
+    title: 'Phone Dropped in Pool!',
+    description: 'A party member\'s phone just took a swim. No Phantom, no Jupiter, nothing — they\'re out of commission.',
     weight: 4,
     category: 'disease',
     choices: [{
       id: 'fix',
-      text: 'Dry it out with rice',
+      text: 'Put it in rice',
       outcome: {
         description: 'The classic rice trick. It\'ll take time but they\'ll be back.',
         partyEffect: { type: 'status', value: 0, status: 'injured', target: 'random' },
@@ -117,14 +123,14 @@ export const GAME_EVENTS: GameEvent[] = [
   // ==================== BREAKDOWNS ====================
   {
     id: 'broken_wheel',
-    title: 'Laptop Charger Died!',
-    description: 'Your laptop charger just stopped working. Battery is draining fast!',
+    title: 'Phone Battery Dead!',
+    description: 'Your phone just died at 0%. No charger in sight and you\'re mid-swap!',
     weight: 5,
     category: 'breakdown',
     choices: [
       {
         id: 'use_spare',
-        text: 'Use a backup charger',
+        text: 'Use a portable charger',
         outcome: {
           description: 'Good thing you brought spares. Back in business.',
           inventoryChanges: { spareWheels: -1 },
@@ -132,9 +138,9 @@ export const GAME_EVENTS: GameEvent[] = [
       },
       {
         id: 'try_fix',
-        text: 'Try to fix the cable (takes a day)',
+        text: 'Find an outlet (takes a day)',
         outcome: {
-          description: 'You spent a day with electrical tape. 50/50 it holds.',
+          description: 'You spent a day hunting for a power outlet. Found one at a gas station.',
           daysLost: 1,
         },
       },
@@ -144,6 +150,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'broken_axle',
     title: 'Wallet Compromised!',
     description: 'Your hot wallet is showing suspicious transactions. Someone has access!',
+    newcomerLearn: 'A hot wallet is a wallet connected to the internet. If compromised, move your funds to a hardware (cold) wallet immediately.',
     weight: 4,
     category: 'breakdown',
     choices: [
@@ -159,7 +166,7 @@ export const GAME_EVENTS: GameEvent[] = [
         id: 'try_fix',
         text: 'Try to secure the wallet (takes 2 days)',
         outcome: {
-          description: 'You spent 2 days rotating keys and revoking. Some ramen was lost in the chaos.',
+          description: 'You spent 2 days rotating keys and revoking. Some data was lost in the chaos.',
           inventoryChanges: { food: -50 },
           daysLost: 2,
         },
@@ -197,6 +204,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'network_storm',
     title: 'Solana Network Congestion!',
     description: 'Transactions are failing left and right! The whole network is jammed.',
+    newcomerLearn: 'Solana can sometimes get congested when there\'s too much activity. Transactions fail and you have to wait or pay more.',
     weight: 6,
     category: 'weather',
     choices: [{
@@ -212,6 +220,8 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'heavy_congestion',
     title: 'Hot Mint Going Live!',
     description: 'Everyone is minting the same NFT collection and gas fees are through the roof!',
+    veteranDescription: 'It\'s giving Mad Lads mint day. Priority fees are insane and Jito tips are through the roof.',
+    newcomerLearn: 'When a popular NFT drops, everyone tries to mint at once. This drives up transaction fees (priority fees).',
     weight: 7,
     category: 'weather',
     choices: [
@@ -237,13 +247,15 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'bear_winter',
     title: 'Crypto Winter!',
     description: 'A sudden bear market has frozen the ecosystem. Charts are red, timeline is sad, and vibes are dead.',
+    veteranDescription: 'It\'s giving post-FTX energy. Charts are red, CT is doom and gloom, and your VPNs are the only thing keeping scammers out.',
+    newcomerLearn: 'A "crypto winter" is when the entire market drops and stays low for months. Scammers get more active during these periods.',
     weight: 4,
     category: 'weather',
     choices: [{
       id: 'push_through',
-      text: 'Diamond hands through the cold',
+      text: 'Diamond hands through it',
       outcome: {
-        description: 'The crypto winter tests your resolve. Morale drops, hoodies are wearing thin.',
+        description: 'The crypto winter tests your resolve. Morale drops. VPNs wearing thin from constant exploit attempts.',
         healthChange: -10,
         inventoryChanges: { clothing: -1 },
       },
@@ -255,6 +267,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'thief',
     title: 'Wallet Drained!',
     description: 'You approved a malicious transaction and SOL was siphoned out while you slept!',
+    newcomerLearn: 'Always check what you\'re signing. Malicious contracts can drain your wallet if you approve the wrong transaction.',
     weight: 5,
     category: 'theft',
     choices: [{
@@ -268,15 +281,15 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'ox_stolen',
-    title: 'Laptop Stolen!',
-    description: 'Someone swiped your laptop from the coffee shop while you were grabbing a refill!',
+    title: 'Phone Stolen!',
+    description: 'Someone swiped your phone from the coffee shop while you were grabbing a refill!',
     weight: 4,
     category: 'theft',
     choices: [{
       id: 'accept',
       text: 'Remote wipe it',
       outcome: {
-        description: 'You lost a laptop but wiped it remotely. At least they can\'t access your wallets.',
+        description: 'You lost a phone but wiped it remotely. At least they can\'t access your wallets.',
         inventoryChanges: { oxen: -1 },
       },
     }],
@@ -285,6 +298,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'fire',
     title: 'Discord Server Hacked!',
     description: 'Your Discord got compromised! Scam links were posted and some party members clicked them.',
+    newcomerLearn: 'Hackers often take over Discord servers to post fake "mint" or "airdrop" links. Never click links from announcements without verifying.',
     weight: 3,
     category: 'theft',
     choices: [{
@@ -302,6 +316,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'bad_water',
     title: 'Fake Token Contract!',
     description: 'The token you\'re about to buy has a suspicious contract. Could be a rug.',
+    newcomerLearn: 'A "rug pull" is when a token creator removes all the liquidity, making the token worthless. Always research (DYOR) before buying.',
     weight: 6,
     category: 'trail',
     choices: [
@@ -325,15 +340,15 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'rough_trail',
-    title: 'Slow WiFi!',
-    description: 'The WiFi at this stop is absolute garbage. Everything is loading at a crawl.',
+    title: 'Dead Zone!',
+    description: 'You\'ve hit an area with terrible cell service. Data speeds are painfully slow.',
     weight: 7,
     category: 'trail',
     choices: [{
       id: 'push',
-      text: 'Tether from your phone',
+      text: 'Tether from another phone',
       outcome: {
-        description: 'Mobile data saved you, but it ate through your data plan. Extra ramen consumed from stress.',
+        description: 'Hotspot saved you, but it burned through your data plan fast.',
         inventoryChanges: { food: -20 },
       },
     }],
@@ -348,7 +363,7 @@ export const GAME_EVENTS: GameEvent[] = [
       id: 'search',
       text: 'Search for new alpha',
       outcome: {
-        description: 'You spent time finding a new group. The ramen supply took a hit.',
+        description: 'You spent time finding a new group. Used extra data searching.',
         daysLost: 2,
         inventoryChanges: { food: -30 },
       },
@@ -356,7 +371,7 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'no_grass',
-    title: 'No WiFi Zone!',
+    title: 'No Signal!',
     description: 'You\'ve hit a dead zone. No internet, no trades, no chart-watching.',
     weight: 5,
     category: 'trail',
@@ -364,7 +379,7 @@ export const GAME_EVENTS: GameEvent[] = [
       id: 'keep_going',
       text: 'Use cached pages and hope',
       outcome: {
-        description: 'Your laptops are useless without WiFi. Ramen is consumed in frustration.',
+        description: 'Your phones are useless without signal. Data consumed trying to reconnect.',
         inventoryChanges: { food: -40 },
       },
     }],
@@ -390,6 +405,8 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'airdrop',
     title: 'Airdrop Incoming!',
     description: 'A protocol you interacted with months ago just launched their token. Free money!',
+    veteranDescription: 'Remember that random dApp you used once in January? They just dropped their token. Your allocation is massive.',
+    newcomerLearn: 'Airdrops are free tokens given to early users of a protocol. It\'s one of the best parts of being early in crypto!',
     weight: 6,
     category: 'positive',
     choices: [{
@@ -404,7 +421,8 @@ export const GAME_EVENTS: GameEvent[] = [
   {
     id: 'find_abandoned',
     title: 'Abandoned Degen Setup!',
-    description: 'You found someone\'s abandoned trading setup on the side of the trail. Laptops, ramen, the works.',
+    description: 'You found someone\'s abandoned trading setup on the side of the trail. Phones, chargers, the works.',
+    veteranDescription: 'Looks like someone rage-quit after the last rug. Their loss is your gain — phones and VPN licenses scattered everywhere.',
     weight: 5,
     category: 'positive',
     choices: [
@@ -412,7 +430,7 @@ export const GAME_EVENTS: GameEvent[] = [
         id: 'search',
         text: 'Grab what you can',
         outcome: {
-          description: 'You salvaged some ramen and a hoodie! Score.',
+          description: 'You salvaged some data packs and a VPN license! Score.',
           inventoryChanges: { food: 50, clothing: 1 },
         },
       },
@@ -420,15 +438,15 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'wild_fruit',
-    title: 'Free Ramen Drop!',
-    description: 'A ramen brand is doing a promo on the trail. Free samples for everyone!',
+    title: 'Free WiFi Hotspot!',
+    description: 'You found an open WiFi hotspot with blazing fast speeds. Time to download everything!',
     weight: 6,
     category: 'positive',
     choices: [{
       id: 'claim',
-      text: 'Load up on free ramen',
+      text: 'Download everything',
       outcome: {
-        description: 'Free ramen! The degen community provides.',
+        description: 'Free data! Your crew loaded up on cached pages and offline content.',
         inventoryChanges: { food: 30 },
       },
     }],
@@ -437,6 +455,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'staking_rewards',
     title: 'Staking Rewards!',
     description: 'Your staked SOL earned some juicy epoch rewards. Passive income hits different.',
+    newcomerLearn: 'Staking is locking up your SOL to help secure the network. In return, you earn rewards each "epoch" (about 2-3 days).',
     weight: 7,
     category: 'positive',
     choices: [{
@@ -480,6 +499,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'yield_farm',
     title: 'Yield Farm Opportunity',
     description: 'A new DeFi protocol is offering 1000% APY. The contract is unaudited but the yields are juicy.',
+    newcomerLearn: 'DeFi (Decentralized Finance) lets you earn yield on your crypto. But if the APY seems too good to be true, it usually is.',
     weight: 4,
     category: 'choice',
     choices: [
@@ -502,14 +522,14 @@ export const GAME_EVENTS: GameEvent[] = [
   },
   {
     id: 'whale_trade',
-    title: 'Whale Wants Your Laptops!',
-    description: 'A crypto whale wants to buy your trading rigs at a premium. Tempting offer.',
+    title: 'Whale Wants Your Phones!',
+    description: 'A crypto whale wants to buy your Seeker phones at a premium. Tempting offer.',
     weight: 4,
     category: 'choice',
     choices: [
       {
         id: 'sell',
-        text: 'Sell 2 laptops for 40 SOL',
+        text: 'Sell 2 phones for 40 SOL',
         outcome: {
           description: 'Deal done. You\'re richer but slower.',
           inventoryChanges: { sol: 40, oxen: -2 },
@@ -517,9 +537,9 @@ export const GAME_EVENTS: GameEvent[] = [
       },
       {
         id: 'decline',
-        text: 'Keep your rigs',
+        text: 'Keep your phones',
         outcome: {
-          description: 'You need every laptop you\'ve got for this journey.',
+          description: 'You need every device you\'ve got for this journey.',
         },
       },
     ],
@@ -533,17 +553,17 @@ export const GAME_EVENTS: GameEvent[] = [
     choices: [
       {
         id: 'trade_food',
-        text: 'Trade 1 hoodie for 80 ramen packs',
+        text: 'Trade 1 VPN for 80 GB data',
         outcome: {
-          description: 'A fair trade. Ramen for warmth.',
+          description: 'A fair trade. Data for security.',
           inventoryChanges: { clothing: -1, food: 80 },
         },
       },
       {
         id: 'trade_ammo',
-        text: 'Trade 3 alpha passes for 1 backup charger',
+        text: 'Trade 3 alpha passes for 1 portable charger',
         outcome: {
-          description: 'Spare chargers are hard to find out here. Good trade.',
+          description: 'Portable chargers are hard to find out here. Good trade.',
           inventoryChanges: { ammunition: -3, spareWheels: 1 },
         },
       },
@@ -558,6 +578,8 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'rug_pull',
     title: 'Rug Pull!',
     description: 'That "guaranteed" memecoin just rugged. Liquidity drained. Dev did a mass dump.',
+    veteranDescription: 'Dev just mass-dumped. LP removed. Telegram admin banned everyone. Classic pump.fun special.',
+    newcomerLearn: 'A rug pull happens when a token creator suddenly removes all liquidity or sells all their tokens, crashing the price to zero.',
     weight: 5,
     category: 'choice',
     choices: [{
@@ -574,6 +596,7 @@ export const GAME_EVENTS: GameEvent[] = [
     id: 'gas_war',
     title: 'Mint War!',
     description: 'A hyped NFT just dropped and everyone\'s fighting for a spot!',
+    newcomerLearn: 'When a popular NFT drops, thousands of people try to buy at once, creating a "mint war" with high fees.',
     weight: 5,
     category: 'choice',
     choices: [

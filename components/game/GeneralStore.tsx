@@ -81,9 +81,9 @@ export function GeneralStore({ inventory, onBuy, onLeave }: GeneralStoreProps) {
       {/* Current inventory summary */}
       <div className="p-4 border-t border-sol-border space-y-3">
         <div className="grid grid-cols-4 gap-1 text-[10px] text-center">
-          <div><span className="text-sol-muted">Laptops</span><br /><span className="font-bold">{inventory.oxen}</span></div>
-          <div><span className="text-sol-muted">Ramen</span><br /><span className="font-bold">{inventory.food}</span></div>
-          <div><span className="text-sol-muted">Hoodies</span><br /><span className="font-bold">{inventory.clothing}</span></div>
+          <div><span className="text-sol-muted">Phones</span><br /><span className="font-bold">{inventory.oxen}</span></div>
+          <div><span className="text-sol-muted">Data</span><br /><span className="font-bold">{inventory.food}</span></div>
+          <div><span className="text-sol-muted">VPNs</span><br /><span className="font-bold">{inventory.clothing}</span></div>
           <div><span className="text-sol-muted">Alpha</span><br /><span className="font-bold">{inventory.ammunition}</span></div>
         </div>
 

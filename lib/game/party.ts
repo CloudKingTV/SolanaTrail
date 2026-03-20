@@ -1,15 +1,19 @@
-import { PartyMember, PartyStatus, Pace, Rations } from './types'
+import { PartyMember, PartyStatus, Pace, Rations, TeamType, BUILDER_ROLES, EXPLORER_ROLES } from './types'
 
-export function createParty(names: string[]): PartyMember[] {
+export function createParty(names: string[], teamType?: TeamType): PartyMember[] {
+  const roles = teamType === 'builders' ? BUILDER_ROLES : teamType === 'explorers' ? EXPLORER_ROLES : undefined
   return names.map((name, i) => ({
     name,
     health: 100,
     status: 'healthy' as PartyStatus,
     isLeader: i === 0,
+    role: roles ? roles[i] || undefined : undefined,
   }))
 }
 
-export const DEFAULT_NAMES = ['toly', 'Ansem', 'Bonk Dog', 'GigaBrain', 'Ser Cope']
+export const DEFAULT_NAMES_BUILDERS = ['toly', 'Ansem', 'Bonk Dog', 'GigaBrain', 'Ser Cope']
+export const DEFAULT_NAMES_EXPLORERS = ['toly', 'Ansem', 'Bonk Dog', 'GigaBrain', 'Ser Cope']
+export const DEFAULT_NAMES = DEFAULT_NAMES_BUILDERS
 
 export function updatePartyHealth(
   party: PartyMember[],
@@ -32,9 +36,9 @@ export function updatePartyHealth(
     else if (rations === 'meager') healthChange -= 1
     else if (rations === 'filling') healthChange += 1
 
-    // Clothing effect (cold weather + low clothing = bad)
+    // VPN effect (bear market + low VPNs = bad — exploits and scams increase)
     const aliveCount = party.filter((m) => m.status !== 'dead').length
-    if (clothing < aliveCount && (weather === 'cold' || weather === 'snowy')) {
+    if (clothing < aliveCount && (weather === 'bear' || weather === 'winter')) {
       healthChange -= 2
     }
 

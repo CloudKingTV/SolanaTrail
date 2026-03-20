@@ -15,6 +15,8 @@ function msg(text: string, type: MessageEntry['type'], day: number): MessageEntr
 export function createInitialState(): GameState {
   return {
     phase: 'title',
+    mode: 'newcomer',
+    teamType: 'explorers',
     profession: null,
     party: [],
     day: 0,
@@ -36,6 +38,7 @@ export function createInitialState(): GameState {
     huntingFoodGained: 0,
     startEpoch: 3,
     currentWeather: 'bull',
+    seekerDetected: false,
   }
 }
 
@@ -49,21 +52,32 @@ export function calculateScore(state: GameState): number {
   const healthPoints: Record<string, number> = { good: 500, fair: 400, poor: 300, very_poor: 200 }
   const survivorPoints = (healthPoints[health] || 200) * alive
 
-  // Supply points (like original: ~1 point per 5 SOL value)
+  // Supply points
   const inv = state.inventory
   const supplyPoints =
-    50 +                                    // wagon (always 50)
-    inv.oxen * 4 +                          // 4 per laptop
+    50 +                                    // base
+    inv.oxen * 4 +                          // 4 per phone
     (inv.spareWheels + inv.spareAxles + inv.spareTongues) * 2 +
     inv.clothing * 2 +
     Math.floor(inv.ammunition / 1) +        // 1 per box
-    Math.floor(inv.food / 25) +             // 1 per 25 food
+    Math.floor(inv.food / 25) +             // 1 per 25 data
     Math.floor(inv.sol / 5)                 // 1 per 5 SOL
 
   const baseScore = survivorPoints + supplyPoints
+
+  // Team type bonus
+  let teamBonus = 0
+  if (state.teamType === 'builders') {
+    // Builders get bonus for resources remaining (runway)
+    teamBonus = Math.floor(inv.sol / 10) * 5
+  } else {
+    // Explorers get bonus for party health (everyone survived)
+    teamBonus = alive * 50
+  }
+
   const multiplier = state.profession?.scoreMultiplier || 1
 
-  return Math.round(baseScore * multiplier)
+  return Math.round((baseScore + teamBonus) * multiplier)
 }
 
 function getWeather(day: number, epoch: number): 'bull' | 'crab' | 'bear' | 'fomo' | 'winter' {
@@ -100,9 +114,26 @@ function applyInventoryChanges(inv: Inventory, changes: Partial<Inventory>): Inv
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
+    // ==================== MODE & TEAM SELECT ====================
+    case 'SET_MODE': {
+      return { ...state, mode: action.mode, phase: 'team_select' }
+    }
+
+    case 'SET_TEAM': {
+      return { ...state, teamType: action.teamType, phase: 'tutorial' }
+    }
+
+    case 'DETECT_SEEKER': {
+      return {
+        ...state,
+        seekerDetected: true,
+        inventory: { ...state.inventory, food: state.inventory.food + 10 },
+      }
+    }
+
     // ==================== TUTORIAL ====================
     case 'START_TUTORIAL': {
-      return { ...state, phase: 'tutorial' }
+      return { ...state, phase: 'mode_select' }
     }
 
     case 'SKIP_TUTORIAL': {
@@ -120,7 +151,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'SET_PARTY_NAMES': {
-      const party = createParty(action.names)
+      const party = createParty(action.names, state.teamType)
       return {
         ...state,
         phase: 'epoch_select',
@@ -172,11 +203,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Warnings if under-prepared
       const warnings: MessageEntry[] = []
       if (state.inventory.oxen < 2) {
-        warnings.push(msg('Warning: You barely have any validators. Travel will be slow!', 'warning', 1))
+        warnings.push(msg('Warning: You barely have any phones. Travel will be slow!', 'warning', 1))
       }
       if (state.inventory.food < 200) {
-        warnings.push(msg('Warning: You may not have enough bandwidth for the journey!', 'warning', 1))
+        warnings.push(msg('Warning: You may not have enough data for the journey!', 'warning', 1))
       }
+
+      const teamMsg = state.teamType === 'builders'
+        ? 'Time to build your way to Mainnet Launch...'
+        : 'The road to Mainnet Launch is long...'
 
       return {
         ...state,
@@ -186,7 +221,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         nextLocation,
         currentWeather: getWeather(1, state.startEpoch),
         messageLog: [
-          msg(`Your party departs from Genesis Block. The road to Mainnet Launch is long...`, 'system', 1),
+          msg(`Your party departs from Genesis Block. ${teamMsg}`, 'system', 1),
           msg(`Party: ${state.party.map((p) => p.name).join(', ')}`, 'info', 1),
           msg(`Pace: ${PACE_INFO[state.pace].label} | Rations: ${RATIONS_INFO[state.rations].label}`, 'info', 1),
           ...warnings,
@@ -216,18 +251,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       const newDay = state.day + 1
 
-      // --- Food consumption ---
+      // --- Data consumption ---
       const aliveCount = getAliveCount(state.party)
       const foodPerDay = RATIONS_INFO[state.rations].foodPerPersonPerDay * aliveCount
       const newFood = Math.max(0, state.inventory.food - foodPerDay)
 
-      // --- Travel speed (based on pace + oxen count) ---
+      // --- Travel speed (based on pace + phone count) ---
       const baseMiles = PACE_INFO[state.pace].milesPerDay
-      const oxenFactor = Math.min(state.inventory.oxen / 6, 1) // 6 oxen = max speed
+      const oxenFactor = Math.min(state.inventory.oxen / 6, 1) // 6 phones = max speed
       const speed = Math.max(3, Math.round(baseMiles * (0.3 + 0.7 * oxenFactor)))
       const newDistance = Math.min(state.totalDistance, state.distanceTraveled + speed)
 
-      // --- Weather ---
+      // --- Market conditions ---
       const weather = getWeather(newDay, state.startEpoch)
 
       // --- Health update ---
@@ -236,13 +271,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       const messages: MessageEntry[] = [...state.messageLog]
       const weatherLabels: Record<string, string> = {
-        bull: 'Bull Market', crab: 'Crab Market', bear: 'Bear Market', fomo: 'FOMO Season', winter: 'Crypto Winter',
+        bull: 'Bull Market 📈', crab: 'Crab Market 🦀', bear: 'Bear Market 📉', fomo: 'FOMO Season 🔥', winter: 'Crypto Winter ❄️',
       }
-      messages.push(msg(`Day ${newDay} — Traveled ${speed} blocks. Market: ${weatherLabels[weather] || weather}.`, 'info', newDay))
+      messages.push(msg(`Day ${newDay} — Traveled ${speed} blocks. ${weatherLabels[weather] || weather}.`, 'info', newDay))
 
-      // Check for starvation
+      // Check for no data
       if (newFood <= 0) {
-        messages.push(msg('You\'re out of bandwidth! Your party is going dark!', 'danger', newDay))
+        messages.push(msg('You\'re out of data! Your party is going dark — no signal, no trades!', 'danger', newDay))
       }
 
       // Check deaths
@@ -273,20 +308,40 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (newLocation && newLocation.id !== state.currentLocation?.id) {
         messages.push(msg(`Arrived at ${newLocation.name}!`, 'success', newDay))
 
+        // Guide message for newcomers
+        if (state.mode === 'newcomer' && newLocation.newcomerLearn) {
+          messages.push(msg(`💡 ${newLocation.newcomerLearn}`, 'guide', newDay))
+        }
+
+        // Context message based on team type
+        if (state.teamType === 'builders' && newLocation.builderContext) {
+          messages.push(msg(newLocation.builderContext, 'info', newDay))
+        } else if (state.teamType === 'explorers' && newLocation.explorerContext) {
+          messages.push(msg(newLocation.explorerContext, 'info', newDay))
+        }
+
+        // Veteran flavor
+        if (state.mode === 'veteran' && newLocation.veteranFlavor) {
+          messages.push(msg(newLocation.veteranFlavor, 'info', newDay))
+        }
+
         // Victory!
         if (newDistance >= state.totalDistance) {
+          const victoryMsg = state.teamType === 'builders'
+            ? 'YOUR PROJECT HAS LAUNCHED ON MAINNET! The Solana ecosystem welcomes your creation!'
+            : 'YOUR CREW MADE IT! You\'ve navigated the entire Solana ecosystem and lived to tell the tale!'
           const finalState: GameState = {
             ...state, phase: 'victory', day: newDay, distanceTraveled: newDistance,
             inventory: newInventory, party: newParty, health: newHealth,
             currentLocation: newLocation, nextLocation: null, currentWeather: weather,
-            messageLog: [...messages, msg('YOU REACHED MAINNET LAUNCH! The protocol is live!', 'success', newDay)],
+            messageLog: [...messages, msg(victoryMsg, 'success', newDay)],
           }
           return { ...finalState, score: calculateScore(finalState) }
         }
 
         // River crossing
         if (newLocation.type === 'river_crossing') {
-          const depth = Math.round((Math.random() * 5 + 1) * 10) / 10 // 1.0 - 6.0 feet
+          const depth = Math.round((Math.random() * 5 + 1) * 10) / 10 // 1.0 - 6.0
           return {
             ...state, phase: 'river_crossing', day: newDay, distanceTraveled: newDistance,
             inventory: newInventory, party: newParty, health: newHealth,
@@ -317,7 +372,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state, phase: 'gameOver', day: newDay, distanceTraveled: newDistance,
           inventory: newInventory, party: newParty, health: newHealth,
           currentLocation: newLocation, nextLocation, currentWeather: weather,
-          messageLog: [...messages, msg('All your validators are offline. No nodes, no network. It\'s over.', 'danger', newDay)],
+          messageLog: [...messages, msg('All your phones are dead. No devices, no connection. It\'s over.', 'danger', newDay)],
         }
         return { ...finalState, score: calculateScore(finalState) }
       }
@@ -339,7 +394,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Health/resource warnings
       if (newHealth === 'poor') messages.push(msg('Your party\'s health is poor. Consider resting.', 'warning', newDay))
       if (newHealth === 'very_poor') messages.push(msg('Your party\'s health is very poor! Rest immediately!', 'danger', newDay))
-      if (newFood < 100) messages.push(msg('Warning: Bandwidth running low!', 'warning', newDay))
+      if (newFood < 100) messages.push(msg('Warning: Data running low!', 'warning', newDay))
       if (newInventory.sol < 10) messages.push(msg('Warning: SOL reserves low!', 'warning', newDay))
 
       return {
@@ -390,7 +445,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Apply days lost
       if (choice.outcome.daysLost) {
         newDay += choice.outcome.daysLost
-        // Consume food for lost days
+        // Consume data for lost days
         const aliveCount = getAliveCount(newParty)
         const foodPerDay = RATIONS_INFO[state.rations].foodPerPersonPerDay * aliveCount
         newInventory = { ...newInventory, food: Math.max(0, newInventory.food - foodPerDay * choice.outcome.daysLost) }
@@ -402,7 +457,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (choice.id === 'use_spare') {
         const changes = choice.outcome.inventoryChanges || {}
         if (changes.spareWheels && changes.spareWheels < 0 && newInventory.spareWheels < 0) {
-          // Didn't have the spare — undo and force the other option
           messages.push(msg('You don\'t have a spare! You\'ll have to try to fix it.', 'danger', state.day))
           newInventory = state.inventory
         }
@@ -448,7 +502,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             if (Math.random() < 0.4) {
               const lostFood = Math.round(Math.random() * 50 + 20)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
-              messages.push(msg(`The bridge lagged! Lost ${lostFood} ramen in failed transactions.`, 'warning', state.day))
+              messages.push(msg(`The bridge lagged! Lost ${lostFood} GB of data in failed transactions.`, 'warning', state.day))
             } else {
               messages.push(msg('Bridged across successfully, but it was sketchy for a minute.', 'success', state.day))
             }
@@ -458,11 +512,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
               newParty = result.party
               const lostFood = Math.round(Math.random() * 100 + 50)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
-              messages.push(msg(`Bridge exploit! ${result.affectedName} got rekt in the transfer! Lost ${lostFood} ramen.`, 'danger', state.day))
+              messages.push(msg(`Bridge exploit! ${result.affectedName} got rekt in the transfer! Lost ${lostFood} GB of data.`, 'danger', state.day))
             } else {
               const lostFood = Math.round(Math.random() * 30 + 10)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
-              messages.push(msg(`Rough bridge transfer. Lost some supplies but everyone made it.`, 'warning', state.day))
+              messages.push(msg(`Rough bridge transfer. Lost some data but everyone made it.`, 'warning', state.day))
             }
           }
           break
@@ -473,7 +527,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           if (Math.random() < 0.25) {
             const lostFood = Math.round(Math.random() * 40 + 10)
             newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
-            messages.push(msg('Wrapped token transfer failed mid-swap! Some supplies lost.', 'warning', state.day))
+            messages.push(msg('Wrapped token transfer failed mid-swap! Some data lost.', 'warning', state.day))
           } else {
             messages.push(msg('Wrapped your tokens and bridged across safely. Clean swap.', 'success', state.day))
           }
@@ -584,7 +638,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'HUNT_SHOOT': {
       if (state.inventory.ammunition <= state.huntingAmmoUsed) {
-        return state // out of ammo
+        return state // out of alpha
       }
 
       // Simple hunting — random reward per shot
@@ -607,7 +661,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           huntingFoodGained: totalFood,
           messageLog: [
             ...state.messageLog,
-            msg(`Hit! Found a ${target.name} worth ${target.food} bounty!`, 'success', state.day),
+            msg(`Hit! Found a ${target.name} worth ${target.food} GB data!`, 'success', state.day),
           ],
         }
       } else {
@@ -641,7 +695,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         huntingFoodGained: 0,
         messageLog: [
           ...state.messageLog,
-          msg(`Scouting complete! Gained ${foodGained} bandwidth, used ${boxesUsed} alpha pass(es).`, 'info', state.day),
+          msg(`Scouting complete! Gained ${foodGained} GB data, used ${boxesUsed} alpha pass(es).`, 'info', state.day),
         ],
       }
     }

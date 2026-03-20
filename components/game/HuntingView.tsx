@@ -31,18 +31,18 @@ export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, mess
         </h2>
         <div className="flex justify-center gap-4 text-xs">
           <div>
-            <span className="text-sol-muted">Ammo: </span>
+            <span className="text-sol-muted">Alpha: </span>
             <span className={ammoRemaining <= 0 ? 'text-danger' : 'text-sol-text'}>
               {ammoRemaining}
             </span>
           </div>
           <div>
-            <span className="text-sol-muted">Bounty: </span>
+            <span className="text-sol-muted">Data found: </span>
             <span className="text-sol-green">{foodGained}/{maxFood}</span>
           </div>
         </div>
         <p className="text-[10px] text-sol-muted">
-          Scout for alpha to earn ramen rewards. Max {maxFood} per session.
+          Scout for alpha to earn data rewards. Max {maxFood} GB per session.
         </p>
       </div>
 
@@ -63,13 +63,13 @@ export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, mess
             >
               <div className="text-2xl">{target.icon}</div>
               <div className="text-[10px] font-semibold text-sol-text">{target.name}</div>
-              <div className="text-[10px] text-sol-muted">+{target.reward} · {target.difficulty}</div>
+              <div className="text-[10px] text-sol-muted">+{target.reward} GB · {target.difficulty}</div>
             </button>
           ))}
         </div>
 
         <Button variant="secondary" fullWidth onClick={onFinish}>
-          Done Scouting (gain {foodGained} ramen)
+          Done Scouting (gain {foodGained} GB data)
         </Button>
       </div>
     </div>

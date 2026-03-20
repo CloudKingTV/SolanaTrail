@@ -3,9 +3,15 @@
 // Crypto-themed Oregon Trail on Solana
 // ============================================
 
+// --- GAME MODES ---
+export type GameMode = 'newcomer' | 'veteran'
+export type TeamType = 'builders' | 'explorers'
+
 // --- GAME PHASES (matches classic Oregon Trail flow) ---
 export type GamePhase =
   | 'title'
+  | 'mode_select'
+  | 'team_select'
   | 'tutorial'
   | 'profession_select'
   | 'party_naming'
@@ -66,7 +72,12 @@ export interface PartyMember {
   health: number // 0-100
   status: PartyStatus
   isLeader: boolean
+  role?: string // role label from team type
 }
+
+// --- TEAM ROLE SETS ---
+export const BUILDER_ROLES = ['Founder', 'Developer', 'Designer', 'Community Lead', 'BD']
+export const EXPLORER_ROLES = ['The Ape', 'The Flipper', 'The Holder', 'The Farmer', 'The Lurker']
 
 // --- PACE (how hard you push your crew) ---
 export type Pace = 'steady' | 'strenuous' | 'grueling'
@@ -92,23 +103,23 @@ export const PACE_INFO: Record<Pace, { label: string; description: string; icon:
   },
 }
 
-// --- RATIONS (how much ramen your crew eats) ---
+// --- RATIONS (how much data your crew uses) ---
 export type Rations = 'filling' | 'meager' | 'bare_bones'
 
 export const RATIONS_INFO: Record<Rations, { label: string; description: string; foodPerPersonPerDay: number }> = {
   filling: {
     label: 'Well Fed',
-    description: '3 ramen per person per day. Keeps everyone healthy.',
+    description: '3 GB of data per person per day. Keeps everyone connected.',
     foodPerPersonPerDay: 3,
   },
   meager: {
     label: 'On a Budget',
-    description: '2 ramen per person per day. Saving supplies.',
+    description: '2 GB per person per day. Saving data.',
     foodPerPersonPerDay: 2,
   },
   bare_bones: {
     label: 'Fasting for Gains',
-    description: '1 ramen per person per day. Health will suffer.',
+    description: '1 GB per person per day. Barely online. Health will suffer.',
     foodPerPersonPerDay: 1,
   },
 }
@@ -116,11 +127,11 @@ export const RATIONS_INFO: Record<Rations, { label: string; description: string;
 // --- RESOURCES/INVENTORY ---
 export interface Inventory {
   sol: number                // cash (like dollars)
-  oxen: number               // laptops/rigs that keep you moving (need at least 1)
-  food: number               // ramen packs (pounds equivalent)
-  clothing: number           // hoodies (crypto uniform, protection)
+  oxen: number               // phones — your devices (need at least 1)
+  food: number               // data — mobile data GB (consumed daily)
+  clothing: number           // VPNs — security protection
   ammunition: number         // alpha passes (boxes of 20 tips)
-  spareWheels: number        // backup chargers
+  spareWheels: number        // portable chargers
   spareAxles: number         // hardware wallets
   spareTongues: number       // burner phones
 }
@@ -150,6 +161,11 @@ export interface Location {
   priceMultiplier: number  // prices go up further along trail
   riverDepth?: number      // for river crossings (randomized at runtime)
   talkTexts?: string[]     // things NPCs say at this location
+  // Mode-aware content
+  newcomerLearn?: string   // Guide character explains the real protocol
+  veteranFlavor?: string   // Extra degen flavor text for veterans
+  builderContext?: string  // What builders do at this stop
+  explorerContext?: string // What explorers experience at this stop
 }
 
 // --- RIVER CROSSING ---
@@ -163,6 +179,10 @@ export interface GameEvent {
   choices: EventChoice[]
   weight: number
   category: 'disease' | 'breakdown' | 'weather' | 'theft' | 'trail' | 'positive' | 'choice'
+  // Mode-aware text
+  veteranTitle?: string
+  veteranDescription?: string
+  newcomerLearn?: string
 }
 
 export interface EventChoice {
@@ -189,7 +209,7 @@ export interface HuntingTarget {
   id: string
   name: string
   icon: string
-  reward: number    // food/bounty reward
+  reward: number    // data reward
   speed: number     // how fast it moves (1-10)
   size: number      // tap target size
   points: number    // score value
@@ -198,6 +218,8 @@ export interface HuntingTarget {
 // --- GAME STATE ---
 export interface GameState {
   phase: GamePhase
+  mode: GameMode
+  teamType: TeamType
   profession: Profession | null
   party: PartyMember[]
   day: number
@@ -222,17 +244,22 @@ export interface GameState {
   // Departure epoch
   startEpoch: number // 1-5 (like March-July)
   currentWeather: 'bull' | 'crab' | 'bear' | 'fomo' | 'winter'
+  // Seeker bonus
+  seekerDetected: boolean
 }
 
 export interface MessageEntry {
   id: string
   text: string
-  type: 'info' | 'success' | 'warning' | 'danger' | 'system'
+  type: 'info' | 'success' | 'warning' | 'danger' | 'system' | 'guide'
   day: number
 }
 
 // --- ACTIONS ---
 export type GameAction =
+  | { type: 'SET_MODE'; mode: GameMode }
+  | { type: 'SET_TEAM'; teamType: TeamType }
+  | { type: 'DETECT_SEEKER' }
   | { type: 'START_TUTORIAL' }
   | { type: 'SKIP_TUTORIAL' }
   | { type: 'SELECT_PROFESSION'; profession: Profession }

@@ -13,6 +13,7 @@ const typeColors: Record<MessageEntry['type'], string> = {
   warning: 'text-warning',
   danger: 'text-danger',
   system: 'text-sol-purple',
+  guide: 'text-sol-blue',
 }
 
 export function MessageLog({ messages }: MessageLogProps) {

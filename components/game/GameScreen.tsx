@@ -1,6 +1,6 @@
 'use client'
 
-import { useReducer, useState, useCallback } from 'react'
+import { useReducer, useState, useEffect } from 'react'
 import { gameReducer, createInitialState, calculateScore } from '@/lib/game/engine'
 import { Pace, Rations, Inventory, PROFESSIONS } from '@/lib/game/types'
 import { StatusBar } from './StatusBar'
@@ -18,6 +18,8 @@ import { RiverCrossing } from './RiverCrossing'
 import { LandmarkView } from './LandmarkView'
 import { HuntingView } from './HuntingView'
 import { Tutorial } from './Tutorial'
+import { ModeSelect } from './ModeSelect'
+import { TeamSelect } from './TeamSelect'
 
 interface GameScreenProps {
   walletAddress?: string
@@ -31,6 +33,16 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
   const [isMinting, setIsMinting] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Seeker phone detection
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      const ua = navigator.userAgent.toLowerCase()
+      if (ua.includes('seeker') || ua.includes('solana phone') || ua.includes('saga')) {
+        dispatch({ type: 'DETECT_SEEKER' })
+      }
+    }
+  }, [])
+
   // ==================== TITLE SCREEN ====================
   if (state.phase === 'title') {
     return (
@@ -41,9 +53,14 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             SOLANA<br />TRAIL
           </h1>
           <p className="text-sm text-sol-muted max-w-xs leading-relaxed">
-            The year is 2024. Your party of 5 must travel from Genesis Block
-            to Mainnet Launch — 2,000 blocks through the crypto wilderness.
+            The year is 2024. Your party of 5 must navigate the entire Solana
+            ecosystem — 2,000 blocks from Genesis Block to Mainnet Launch.
           </p>
+          {state.seekerDetected && (
+            <div className="text-xs text-sol-green bg-sol-green/10 border border-sol-green/30 rounded-lg px-3 py-2">
+              📱 Seeker Detected! +10 Data bonus at start
+            </div>
+          )}
         </div>
 
         <div className="w-full max-w-xs space-y-3">
@@ -52,12 +69,6 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             className="w-full min-h-[56px] px-8 py-4 rounded-xl border-2 border-sol-green bg-sol-green/10 text-sol-green font-pixel text-xs hover:bg-sol-green/20 active:bg-sol-green/30 transition-all btn-press"
           >
             START TRAIL
-          </button>
-          <button
-            onClick={() => dispatch({ type: 'SKIP_TUTORIAL' })}
-            className="w-full py-2 text-[10px] text-sol-muted hover:text-sol-text transition-colors"
-          >
-            Skip Tutorial
           </button>
         </div>
 
@@ -74,9 +85,19 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
     )
   }
 
+  // ==================== MODE SELECT ====================
+  if (state.phase === 'mode_select') {
+    return <ModeSelect onSelect={(mode) => dispatch({ type: 'SET_MODE', mode })} />
+  }
+
+  // ==================== TEAM SELECT ====================
+  if (state.phase === 'team_select') {
+    return <TeamSelect mode={state.mode} onSelect={(teamType) => dispatch({ type: 'SET_TEAM', teamType })} />
+  }
+
   // ==================== TUTORIAL ====================
   if (state.phase === 'tutorial') {
-    return <Tutorial onComplete={() => dispatch({ type: 'SKIP_TUTORIAL' })} />
+    return <Tutorial mode={state.mode} onComplete={() => dispatch({ type: 'SKIP_TUTORIAL' })} />
   }
 
   // ==================== PROFESSION SELECT ====================
