@@ -3,9 +3,20 @@ import { Providers } from '@/components/providers'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Solana Trail',
-  description: 'Journey from Genesis Block to Mainnet Launch. A crypto-themed Oregon Trail on Solana.',
+  title: 'Solana Trail — Navigate the Crypto Ecosystem',
+  description: 'Journey from Genesis Block to Mainnet Launch. A crypto-themed Oregon Trail on Solana — learn DeFi, dodge rugs, and survive the blockchain wilderness.',
   icons: { icon: '/favicon.ico' },
+  openGraph: {
+    title: 'Solana Trail',
+    description: 'Navigate 2,000 blocks through the Solana ecosystem. Dodge rug pulls, bridge tokens, farm airdrops, and get your crew to Mainnet alive.',
+    type: 'website',
+    siteName: 'Solana Trail',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Solana Trail',
+    description: 'Oregon Trail meets Solana. Navigate the crypto ecosystem, survive rug pulls, and reach Mainnet Launch.',
+  },
 }
 
 export const viewport: Viewport = {

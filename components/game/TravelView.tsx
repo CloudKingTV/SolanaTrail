@@ -62,7 +62,7 @@ export function TravelView({
 
       {/* Rations selector */}
       <div className="px-4 py-2 border-b border-sol-border">
-        <div className="text-[10px] text-sol-muted mb-1">RATIONS</div>
+        <div className="text-[10px] text-sol-muted mb-1">DATA USAGE</div>
         <div className="grid grid-cols-3 gap-1">
           {(['filling', 'meager', 'bare_bones'] as Rations[]).map((ration) => (
             <button

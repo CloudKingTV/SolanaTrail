@@ -241,6 +241,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
         <EventDialog
           event={state.currentEvent}
           selectedChoice={state.selectedChoice}
+          mode={state.mode}
           onChoice={(id) => dispatch({ type: 'HANDLE_CHOICE', choiceId: id })}
           onDismiss={() => dispatch({ type: 'DISMISS_EVENT' })}
         />

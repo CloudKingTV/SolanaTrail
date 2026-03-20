@@ -10,6 +10,7 @@ const statusEmoji: Record<string, string> = {
   healthy: '💚',
   sick: '🤢',
   injured: '🤕',
+  exhausted: '😩',
   rugged: '💀',
   dead: '⚰️',
 }
@@ -18,6 +19,7 @@ const statusColor: Record<string, string> = {
   healthy: 'text-sol-green',
   sick: 'text-warning',
   injured: 'text-warning',
+  exhausted: 'text-warning',
   rugged: 'text-danger',
   dead: 'text-sol-muted line-through',
 }
@@ -35,11 +37,14 @@ export function PartyStatus({ party }: PartyStatusProps) {
             }`}
           >
             <div className="flex items-center gap-2">
-              <span>{statusEmoji[member.status]}</span>
+              <span>{statusEmoji[member.status] || '💚'}</span>
               <div>
-                <span className={statusColor[member.status]}>
+                <span className={statusColor[member.status] || 'text-sol-text'}>
                   {member.isLeader ? '⭐ ' : ''}{member.name}
                 </span>
+                {member.role && (
+                  <span className="text-[10px] text-sol-muted ml-1">({member.role})</span>
+                )}
               </div>
             </div>
             {member.status !== 'dead' && (

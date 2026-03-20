@@ -19,8 +19,8 @@ export const STORE_ITEMS: StoreItem[] = [
     icon: '📶',
     unit: 'GB',
     basePrice: 0.20,
-    description: 'Mobile data to keep your crew online. ~100 GB per person. No data = no trades.',
-    max: 2000,
+    description: 'Mobile data to keep your crew online. ~100 GB per person to start. No data = no trades.',
+    max: 2500,
     step: 100,
   },
   {

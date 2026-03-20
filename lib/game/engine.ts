@@ -367,7 +367,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return { ...finalState, score: calculateScore(finalState) }
       }
 
-      if (state.inventory.oxen <= 0) {
+      if (newInventory.oxen <= 0) {
         const finalState: GameState = {
           ...state, phase: 'gameOver', day: newDay, distanceTraveled: newDistance,
           inventory: newInventory, party: newParty, health: newHealth,
@@ -416,6 +416,27 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const messages = [...state.messageLog]
       let newDay = state.day
 
+      // Check if spare part is required but missing
+      if (choice.id === 'use_spare' && choice.outcome.inventoryChanges) {
+        const changes = choice.outcome.inventoryChanges
+        const inv = newInventory
+        const missingSpare =
+          (changes.spareWheels && changes.spareWheels < 0 && inv.spareWheels <= 0) ||
+          (changes.spareAxles && changes.spareAxles < 0 && inv.spareAxles <= 0) ||
+          (changes.spareTongues && changes.spareTongues < 0 && inv.spareTongues <= 0)
+
+        if (missingSpare) {
+          messages.push(msg('You don\'t have a spare! You\'ll have to try to fix it the hard way.', 'danger', state.day))
+          // Fall through with a time penalty instead
+          return {
+            ...state,
+            day: state.day + 2,
+            inventory: { ...newInventory, food: Math.max(0, newInventory.food - 20) },
+            messageLog: [...messages, msg('Lost 2 days jury-rigging a fix. Some data was lost.', 'warning', state.day)],
+          }
+        }
+      }
+
       // Apply inventory changes
       if (choice.outcome.inventoryChanges) {
         newInventory = applyInventoryChanges(newInventory, choice.outcome.inventoryChanges)
@@ -452,15 +473,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       messages.push(msg(choice.outcome.description, 'info', state.day))
-
-      // Check for spare part usage
-      if (choice.id === 'use_spare') {
-        const changes = choice.outcome.inventoryChanges || {}
-        if (changes.spareWheels && changes.spareWheels < 0 && newInventory.spareWheels < 0) {
-          messages.push(msg('You don\'t have a spare! You\'ll have to try to fix it.', 'danger', state.day))
-          newInventory = state.inventory
-        }
-      }
 
       return {
         ...state,
