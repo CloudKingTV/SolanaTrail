@@ -11,10 +11,13 @@ interface GameOverProps {
   onSubmitScore?: () => void
   isMinting?: boolean
   isSubmitting?: boolean
+  achievements?: string[]
+  onShowAchievements?: () => void
 }
 
 export function GameOver({
   state, onPlayAgain, onMintNFT, onSubmitScore, isMinting = false, isSubmitting = false,
+  achievements = [], onShowAchievements,
 }: GameOverProps) {
   const isVictory = state.phase === 'victory'
   const alive = getAliveCount(state.party)
@@ -108,6 +111,11 @@ export function GameOver({
         {onSubmitScore && (
           <Button variant="primary" fullWidth onClick={onSubmitScore} disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : '📊 Submit to Leaderboard'}
+          </Button>
+        )}
+        {onShowAchievements && (
+          <Button variant="ghost" fullWidth onClick={onShowAchievements}>
+            🏅 Achievements ({achievements.length})
           </Button>
         )}
         <Button variant="ghost" fullWidth onClick={onPlayAgain}>

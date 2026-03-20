@@ -23,6 +23,8 @@ export type GamePhase =
   | 'trading'         // at a fort/trading post
   | 'landmark'        // arrived at a landmark, can look around
   | 'hunting'         // alpha scouting mini-game
+  | 'token_trading'   // token trading mini-game at forts
+  | 'encounter'       // random NPC encounter on the trail
   | 'resting'
   | 'gameOver'
   | 'victory'
@@ -215,6 +217,51 @@ export interface HuntingTarget {
   points: number    // score value
 }
 
+// --- TOKEN TRADING MINI-GAME ---
+export interface TokenPrice {
+  name: string
+  icon: string
+  price: number
+  history: number[]   // last N prices for chart
+  volatility: number  // 0-1, how much it swings
+}
+
+// --- RANDOM ENCOUNTERS ---
+export interface Encounter {
+  id: string
+  name: string
+  icon: string
+  description: string
+  dialogue: string
+  choices: EncounterChoice[]
+}
+
+export interface EncounterChoice {
+  id: string
+  text: string
+  outcome: {
+    description: string
+    inventoryChanges?: Partial<Inventory>
+    partyEffect?: {
+      type: 'damage' | 'heal' | 'status'
+      value: number
+      status?: PartyStatus
+      target: 'random' | 'all' | 'leader'
+    }
+    healthChange?: number
+    daysLost?: number
+  }
+}
+
+// --- ACHIEVEMENTS ---
+export interface Achievement {
+  id: string
+  name: string
+  icon: string
+  description: string
+  secret?: boolean // hidden until unlocked
+}
+
 // --- GAME STATE ---
 export interface GameState {
   phase: GamePhase
@@ -246,6 +293,18 @@ export interface GameState {
   currentWeather: 'bull' | 'crab' | 'bear' | 'fomo' | 'winter'
   // Seeker bonus
   seekerDetected: boolean
+  // Token trading mini-game
+  tokenPrices: TokenPrice[]
+  tokenHoldings: Record<string, number> // token name -> qty owned
+  tradingRoundsLeft: number
+  // Random encounters
+  currentEncounter: Encounter | null
+  selectedEncounterChoice: EncounterChoice | null
+  // Achievements
+  unlockedAchievements: string[] // achievement IDs
+  // Save/Load & Daily Challenge
+  dailySeed: string | null // null = normal mode, string = daily challenge seed
+  isDaily: boolean
 }
 
 export interface MessageEntry {
@@ -284,4 +343,16 @@ export type GameAction =
   | { type: 'HUNT_SHOOT'; targetId: string }
   | { type: 'END_HUNTING' }
   | { type: 'RIVER_CHOICE'; choice: RiverCrossingChoice }
+  // Token trading mini-game
+  | { type: 'ENTER_TOKEN_TRADING' }
+  | { type: 'BUY_TOKEN'; tokenName: string; amount: number }
+  | { type: 'SELL_TOKEN'; tokenName: string; amount: number }
+  | { type: 'ADVANCE_MARKET' }  // simulate next price tick
+  | { type: 'LEAVE_TOKEN_TRADING' }
+  // Random encounters
+  | { type: 'ENCOUNTER_CHOICE'; choiceId: string }
+  | { type: 'DISMISS_ENCOUNTER' }
+  // Save/Load
+  | { type: 'LOAD_GAME'; savedState: GameState }
+  | { type: 'START_DAILY' }
   | { type: 'PLAY_AGAIN' }

@@ -12,11 +12,12 @@ interface LandmarkViewProps {
   onTalk: () => void
   onTrade: () => void
   onRest: () => void
+  onTokenTrade?: () => void
   messages: MessageEntry[]
 }
 
 export function LandmarkView({
-  location, inventory, onContinue, onLookAround, onTalk, onTrade, onRest, messages,
+  location, inventory, onContinue, onLookAround, onTalk, onTrade, onRest, onTokenTrade, messages,
 }: LandmarkViewProps) {
   const isFort = location.hasStore
 
@@ -59,16 +60,21 @@ export function LandmarkView({
             💬 Talk to People
           </Button>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className={`grid ${onTokenTrade ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
           <Button
             variant="secondary" fullWidth onClick={onTrade}
             disabled={!isFort}
             className="text-[10px]"
           >
-            🏪 Buy Supplies
+            🏪 Supplies
           </Button>
+          {onTokenTrade && (
+            <Button variant="secondary" fullWidth onClick={onTokenTrade} className="text-[10px]">
+              📊 Tokens
+            </Button>
+          )}
           <Button variant="ghost" fullWidth onClick={onRest} className="text-[10px]">
-            😴 Rest Here
+            😴 Rest
           </Button>
         </div>
         <Button variant="primary" fullWidth onClick={onContinue}>

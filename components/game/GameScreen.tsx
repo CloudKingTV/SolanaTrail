@@ -1,8 +1,10 @@
 'use client'
 
-import { useReducer, useState, useEffect } from 'react'
+import { useReducer, useState, useEffect, useCallback, useRef } from 'react'
 import { gameReducer, createInitialState, calculateScore } from '@/lib/game/engine'
 import { Pace, Rations, Inventory, PROFESSIONS } from '@/lib/game/types'
+import { checkAchievements, createInitialStats, saveAchievements, loadAchievements, GameStats } from '@/lib/game/achievements'
+import { saveGame, loadGame, deleteSave, hasSavedGame, getDailySeed, hasDailyBeenPlayed, markDailyPlayed, saveDailyScore } from '@/lib/game/save'
 import { StatusBar } from './StatusBar'
 import { MessageLog } from './MessageLog'
 import { TravelView } from './TravelView'
@@ -20,6 +22,10 @@ import { HuntingView } from './HuntingView'
 import { Tutorial } from './Tutorial'
 import { ModeSelect } from './ModeSelect'
 import { TeamSelect } from './TeamSelect'
+import { TokenTradingView } from './TokenTradingView'
+import { EncounterDialog } from './EncounterDialog'
+import { AchievementsView } from './AchievementsView'
+import { AchievementToast } from './AchievementToast'
 
 interface GameScreenProps {
   walletAddress?: string
@@ -32,6 +38,15 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
   const [showParty, setShowParty] = useState(false)
   const [isMinting, setIsMinting] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showAchievements, setShowAchievements] = useState(false)
+  const [newAchievements, setNewAchievements] = useState<string[]>([])
+  const [allAchievements, setAllAchievements] = useState<string[]>([])
+  const statsRef = useRef<GameStats>(createInitialStats())
+
+  // Load persisted achievements on mount
+  useEffect(() => {
+    setAllAchievements(loadAchievements())
+  }, [])
 
   // Seeker phone detection
   useEffect(() => {
@@ -43,10 +58,99 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
     }
   }, [])
 
+  // Auto-save during active game
+  useEffect(() => {
+    if (['traveling', 'landmark', 'event', 'encounter', 'hunting', 'trading', 'token_trading', 'river_crossing'].includes(state.phase)) {
+      saveGame(state, statsRef.current)
+    }
+    if (state.phase === 'gameOver' || state.phase === 'victory') {
+      deleteSave()
+    }
+  }, [state])
+
+  // Track stats for achievements
+  useEffect(() => {
+    if (state.phase === 'traveling') {
+      // Stats tracking happens through actions
+    }
+  }, [state.phase])
+
+  // Check achievements on game end
+  useEffect(() => {
+    if (state.phase === 'victory' || state.phase === 'gameOver') {
+      const earned = checkAchievements(state, statsRef.current)
+      if (earned.length > 0) {
+        setNewAchievements(earned)
+        const updated = [...new Set([...allAchievements, ...earned])]
+        setAllAchievements(updated)
+        saveAchievements(earned)
+      }
+      // Mark daily played
+      if (state.isDaily) {
+        markDailyPlayed()
+        if (state.phase === 'victory') {
+          saveDailyScore(state.score)
+        }
+      }
+    }
+  }, [state.phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Track rests and hunts for achievements
+  const wrappedDispatch = useCallback((action: Parameters<typeof dispatch>[0]) => {
+    if (action.type === 'REST') {
+      statsRef.current.timesRested++
+    }
+    if (action.type === 'START_HUNTING') {
+      statsRef.current.timesHunted++
+    }
+    if (action.type === 'ENCOUNTER_CHOICE' && state.currentEncounter) {
+      statsRef.current.encounteredNpcs.add(state.currentEncounter.id)
+      statsRef.current.encountersMet = statsRef.current.encounteredNpcs.size
+      if (state.currentEncounter.id === 'lost_degen' && action.choiceId === 'help') {
+        statsRef.current.helpedLostDegen = true
+      }
+    }
+    if (action.type === 'LEAVE_TOKEN_TRADING') {
+      // Calculate trading profit
+      let holdingsValue = 0
+      for (const [name, qty] of Object.entries(state.tokenHoldings)) {
+        const token = state.tokenPrices.find(t => t.name === name)
+        if (token) holdingsValue += token.price * qty
+      }
+      // Rough profit calc: current sol + holdings - sol at start
+      // We approximate by tracking the holdings value as profit
+      if (holdingsValue > statsRef.current.bestTradingProfit) {
+        statsRef.current.bestTradingProfit = holdingsValue
+      }
+    }
+    dispatch(action)
+  }, [state.currentEncounter, state.tokenHoldings, state.tokenPrices])
+
+  // ==================== ACHIEVEMENTS VIEW ====================
+  if (showAchievements) {
+    return (
+      <AchievementsView
+        unlockedIds={allAchievements}
+        onClose={() => setShowAchievements(false)}
+      />
+    )
+  }
+
   // ==================== TITLE SCREEN ====================
   if (state.phase === 'title') {
+    const savedGame = hasSavedGame()
+    const dailyPlayed = hasDailyBeenPlayed()
+
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] p-6 text-center space-y-8">
+        {/* Achievement toast */}
+        {newAchievements.length > 0 && (
+          <AchievementToast
+            achievementIds={newAchievements}
+            onDone={() => setNewAchievements([])}
+          />
+        )}
+
         <div className="space-y-4">
           <div className="text-6xl">◎</div>
           <h1 className="font-pixel text-xl text-sol-green glow-green leading-relaxed">
@@ -68,7 +172,37 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             onClick={() => dispatch({ type: 'START_TUTORIAL' })}
             className="w-full min-h-[56px] px-8 py-4 rounded-xl border-2 border-sol-green bg-sol-green/10 text-sol-green font-pixel text-xs hover:bg-sol-green/20 active:bg-sol-green/30 transition-all btn-press"
           >
-            START TRAIL
+            NEW GAME
+          </button>
+
+          {savedGame && (
+            <button
+              onClick={() => {
+                const save = loadGame()
+                if (save) {
+                  statsRef.current = save.stats
+                  dispatch({ type: 'LOAD_GAME', savedState: save.state })
+                }
+              }}
+              className="w-full min-h-[48px] px-6 py-3 rounded-xl border border-sol-purple/50 bg-sol-purple/10 text-sol-purple font-pixel text-xs hover:bg-sol-purple/20 active:bg-sol-purple/30 transition-all btn-press"
+            >
+              CONTINUE SAVED GAME
+            </button>
+          )}
+
+          <button
+            onClick={() => dispatch({ type: 'START_DAILY' })}
+            disabled={dailyPlayed}
+            className="w-full min-h-[48px] px-6 py-3 rounded-xl border border-sol-blue/50 bg-sol-blue/10 text-sol-blue font-pixel text-xs hover:bg-sol-blue/20 active:bg-sol-blue/30 transition-all btn-press disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {dailyPlayed ? 'DAILY COMPLETE ✓' : '📅 DAILY CHALLENGE'}
+          </button>
+
+          <button
+            onClick={() => setShowAchievements(true)}
+            className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press"
+          >
+            🏅 Achievements ({allAchievements.length})
           </button>
         </div>
 
@@ -87,32 +221,32 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
 
   // ==================== MODE SELECT ====================
   if (state.phase === 'mode_select') {
-    return <ModeSelect onSelect={(mode) => dispatch({ type: 'SET_MODE', mode })} />
+    return <ModeSelect onSelect={(mode) => wrappedDispatch({ type: 'SET_MODE', mode })} />
   }
 
   // ==================== TEAM SELECT ====================
   if (state.phase === 'team_select') {
-    return <TeamSelect mode={state.mode} onSelect={(teamType) => dispatch({ type: 'SET_TEAM', teamType })} />
+    return <TeamSelect mode={state.mode} onSelect={(teamType) => wrappedDispatch({ type: 'SET_TEAM', teamType })} />
   }
 
   // ==================== TUTORIAL ====================
   if (state.phase === 'tutorial') {
-    return <Tutorial mode={state.mode} onComplete={() => dispatch({ type: 'SKIP_TUTORIAL' })} />
+    return <Tutorial mode={state.mode} onComplete={() => wrappedDispatch({ type: 'SKIP_TUTORIAL' })} />
   }
 
   // ==================== PROFESSION SELECT ====================
   if (state.phase === 'profession_select') {
-    return <ProfessionSelect onSelect={(p) => dispatch({ type: 'SELECT_PROFESSION', profession: p })} />
+    return <ProfessionSelect onSelect={(p) => wrappedDispatch({ type: 'SELECT_PROFESSION', profession: p })} />
   }
 
   // ==================== PARTY NAMING ====================
   if (state.phase === 'party_naming') {
-    return <PartyNaming onSubmit={(names) => dispatch({ type: 'SET_PARTY_NAMES', names })} />
+    return <PartyNaming onSubmit={(names) => wrappedDispatch({ type: 'SET_PARTY_NAMES', names })} />
   }
 
   // ==================== EPOCH SELECT ====================
   if (state.phase === 'epoch_select') {
-    return <EpochSelect onSelect={(epoch) => dispatch({ type: 'SET_EPOCH', epoch })} />
+    return <EpochSelect onSelect={(epoch) => wrappedDispatch({ type: 'SET_EPOCH', epoch })} />
   }
 
   // ==================== GENERAL STORE ====================
@@ -120,8 +254,8 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
     return (
       <GeneralStore
         inventory={state.inventory}
-        onBuy={(item, qty) => dispatch({ type: 'BUY_INITIAL', item, quantity: qty })}
-        onLeave={() => dispatch({ type: 'START_TRAIL' })}
+        onBuy={(item, qty) => wrappedDispatch({ type: 'BUY_INITIAL', item, quantity: qty })}
+        onLeave={() => wrappedDispatch({ type: 'START_TRAIL' })}
       />
     )
   }
@@ -129,26 +263,53 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
   // ==================== GAME OVER / VICTORY ====================
   if (state.phase === 'gameOver' || state.phase === 'victory') {
     return (
-      <GameOver
-        state={state}
-        onPlayAgain={() => dispatch({ type: 'PLAY_AGAIN' })}
-        onMintNFT={walletAddress ? async () => {
-          setIsMinting(true)
-          try { await onMintNFT?.() } finally { setIsMinting(false) }
-        } : undefined}
-        onSubmitScore={walletAddress ? async () => {
-          setIsSubmitting(true)
-          try { await onSubmitScore?.(state.score, walletAddress!) } finally { setIsSubmitting(false) }
-        } : undefined}
-        isMinting={isMinting}
-        isSubmitting={isSubmitting}
-      />
+      <>
+        {newAchievements.length > 0 && (
+          <AchievementToast
+            achievementIds={newAchievements}
+            onDone={() => setNewAchievements([])}
+          />
+        )}
+        <GameOver
+          state={state}
+          onPlayAgain={() => {
+            statsRef.current = createInitialStats()
+            dispatch({ type: 'PLAY_AGAIN' })
+          }}
+          onMintNFT={walletAddress ? async () => {
+            setIsMinting(true)
+            try { await onMintNFT?.() } finally { setIsMinting(false) }
+          } : undefined}
+          onSubmitScore={walletAddress ? async () => {
+            setIsSubmitting(true)
+            try { await onSubmitScore?.(state.score, walletAddress!) } finally { setIsSubmitting(false) }
+          } : undefined}
+          isMinting={isMinting}
+          isSubmitting={isSubmitting}
+          achievements={allAchievements}
+          onShowAchievements={() => setShowAchievements(true)}
+        />
+      </>
     )
   }
 
   // ==================== MAIN GAME VIEW ====================
   return (
     <div className="flex flex-col h-[100dvh] max-w-md mx-auto">
+      {/* Achievement toast */}
+      {newAchievements.length > 0 && (
+        <AchievementToast
+          achievementIds={newAchievements}
+          onDone={() => setNewAchievements([])}
+        />
+      )}
+
+      {state.isDaily && (
+        <div className="bg-sol-blue/10 border-b border-sol-blue/30 px-4 py-1 text-center">
+          <span className="text-[10px] text-sol-blue font-pixel">📅 DAILY CHALLENGE</span>
+        </div>
+      )}
+
       <StatusBar
         inventory={state.inventory}
         day={state.day}
@@ -165,7 +326,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             location={state.currentLocation}
             depth={state.riverDepth}
             sol={state.inventory.sol}
-            onChoice={(choice) => dispatch({ type: 'RIVER_CHOICE', choice })}
+            onChoice={(choice) => wrappedDispatch({ type: 'RIVER_CHOICE', choice })}
           />
         )}
 
@@ -174,11 +335,12 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           <LandmarkView
             location={state.currentLocation}
             inventory={state.inventory}
-            onContinue={() => dispatch({ type: 'CONTINUE_FROM_LANDMARK' })}
-            onLookAround={() => dispatch({ type: 'LOOK_AROUND' })}
-            onTalk={() => dispatch({ type: 'TALK_TO_PEOPLE' })}
-            onTrade={() => dispatch({ type: 'ENTER_TRADING' })}
-            onRest={() => dispatch({ type: 'REST' })}
+            onContinue={() => wrappedDispatch({ type: 'CONTINUE_FROM_LANDMARK' })}
+            onLookAround={() => wrappedDispatch({ type: 'LOOK_AROUND' })}
+            onTalk={() => wrappedDispatch({ type: 'TALK_TO_PEOPLE' })}
+            onTrade={() => wrappedDispatch({ type: 'ENTER_TRADING' })}
+            onRest={() => wrappedDispatch({ type: 'REST' })}
+            onTokenTrade={state.currentLocation.hasStore ? () => wrappedDispatch({ type: 'ENTER_TOKEN_TRADING' }) : undefined}
             messages={state.messageLog.filter(m => m.day >= state.day)}
           />
         )}
@@ -188,8 +350,23 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           <TradingPost
             location={state.currentLocation}
             inventory={state.inventory}
-            onBuy={(item, qty) => dispatch({ type: 'BUY_ITEM', item, quantity: qty })}
-            onLeave={() => dispatch({ type: 'LEAVE_TRADING' })}
+            onBuy={(item, qty) => wrappedDispatch({ type: 'BUY_ITEM', item, quantity: qty })}
+            onLeave={() => wrappedDispatch({ type: 'LEAVE_TRADING' })}
+          />
+        )}
+
+        {/* TOKEN TRADING MINI-GAME */}
+        {state.phase === 'token_trading' && (
+          <TokenTradingView
+            tokenPrices={state.tokenPrices}
+            holdings={state.tokenHoldings}
+            sol={state.inventory.sol}
+            roundsLeft={state.tradingRoundsLeft}
+            onBuy={(name, amt) => wrappedDispatch({ type: 'BUY_TOKEN', tokenName: name, amount: amt })}
+            onSell={(name, amt) => wrappedDispatch({ type: 'SELL_TOKEN', tokenName: name, amount: amt })}
+            onAdvanceMarket={() => wrappedDispatch({ type: 'ADVANCE_MARKET' })}
+            onLeave={() => wrappedDispatch({ type: 'LEAVE_TOKEN_TRADING' })}
+            messages={state.messageLog.filter(m => m.day >= state.day)}
           />
         )}
 
@@ -198,8 +375,8 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           <HuntingView
             ammoRemaining={state.inventory.ammunition * 20 - state.huntingAmmoUsed}
             foodGained={state.huntingFoodGained}
-            onShoot={(targetId) => dispatch({ type: 'HUNT_SHOOT', targetId })}
-            onFinish={() => dispatch({ type: 'END_HUNTING' })}
+            onShoot={(targetId) => wrappedDispatch({ type: 'HUNT_SHOOT', targetId })}
+            onFinish={() => wrappedDispatch({ type: 'END_HUNTING' })}
             messages={state.messageLog.filter(m => m.day >= state.day)}
           />
         )}
@@ -223,12 +400,12 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             <MessageLog messages={state.messageLog} />
             <TravelView
               state={state}
-              onAdvance={() => dispatch({ type: 'ADVANCE_DAY' })}
-              onRest={() => dispatch({ type: 'REST' })}
-              onTrade={() => dispatch({ type: 'ENTER_TRADING' })}
-              onSetPace={(p) => dispatch({ type: 'SET_PACE', pace: p })}
-              onSetRations={(r) => dispatch({ type: 'SET_RATIONS', rations: r })}
-              onHunt={() => dispatch({ type: 'START_HUNTING' })}
+              onAdvance={() => wrappedDispatch({ type: 'ADVANCE_DAY' })}
+              onRest={() => wrappedDispatch({ type: 'REST' })}
+              onTrade={() => wrappedDispatch({ type: 'ENTER_TRADING' })}
+              onSetPace={(p) => wrappedDispatch({ type: 'SET_PACE', pace: p })}
+              onSetRations={(r) => wrappedDispatch({ type: 'SET_RATIONS', rations: r })}
+              onHunt={() => wrappedDispatch({ type: 'START_HUNTING' })}
               showParty={showParty}
               onToggleParty={() => setShowParty(!showParty)}
             />
@@ -242,8 +419,18 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           event={state.currentEvent}
           selectedChoice={state.selectedChoice}
           mode={state.mode}
-          onChoice={(id) => dispatch({ type: 'HANDLE_CHOICE', choiceId: id })}
-          onDismiss={() => dispatch({ type: 'DISMISS_EVENT' })}
+          onChoice={(id) => wrappedDispatch({ type: 'HANDLE_CHOICE', choiceId: id })}
+          onDismiss={() => wrappedDispatch({ type: 'DISMISS_EVENT' })}
+        />
+      )}
+
+      {/* ENCOUNTER DIALOG */}
+      {state.phase === 'encounter' && (
+        <EncounterDialog
+          encounter={state.currentEncounter}
+          selectedChoice={state.selectedEncounterChoice}
+          onChoice={(id) => wrappedDispatch({ type: 'ENCOUNTER_CHOICE', choiceId: id })}
+          onDismiss={() => wrappedDispatch({ type: 'DISMISS_ENCOUNTER' })}
         />
       )}
     </div>

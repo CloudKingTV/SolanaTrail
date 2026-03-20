@@ -4,8 +4,10 @@ import {
 } from './types'
 import { TOTAL_DISTANCE, getCurrentLocation, getNextLocation, getLocationByDistance } from './locations'
 import { getRandomEvent } from './events'
+import { getRandomEncounter } from './encounters'
 import { createParty, DEFAULT_NAMES, updatePartyHealth, applyPartyEffect, getAliveCount, getOverallHealth } from './party'
 import { INITIAL_INVENTORY, STORE_ITEMS, getStoreTotalCost } from './store'
+import { generateTokenPrices, tickPrices } from './tokens'
 
 let messageIdCounter = 0
 function msg(text: string, type: MessageEntry['type'], day: number): MessageEntry {
@@ -39,6 +41,18 @@ export function createInitialState(): GameState {
     startEpoch: 3,
     currentWeather: 'bull',
     seekerDetected: false,
+    // Token trading
+    tokenPrices: [],
+    tokenHoldings: {},
+    tradingRoundsLeft: 0,
+    // Encounters
+    currentEncounter: null,
+    selectedEncounterChoice: null,
+    // Achievements
+    unlockedAchievements: [],
+    // Daily challenge
+    dailySeed: null,
+    isDaily: false,
   }
 }
 
@@ -387,6 +401,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             inventory: newInventory, party: newParty, health: newHealth,
             currentLocation: newLocation, nextLocation, currentEvent: event,
             selectedChoice: null, currentWeather: weather, messageLog: messages,
+          }
+        }
+
+        // --- Random NPC encounters (separate from events) ---
+        const encounter = getRandomEncounter(newDay)
+        if (encounter) {
+          return {
+            ...state, phase: 'encounter', day: newDay, distanceTraveled: newDistance,
+            inventory: newInventory, party: newParty, health: newHealth,
+            currentLocation: newLocation, nextLocation, currentWeather: weather,
+            currentEncounter: encounter, selectedEncounterChoice: null,
+            messageLog: messages,
           }
         }
       }
@@ -742,6 +768,188 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.messageLog,
           msg('The party rested for a day. Health improved.', 'success', newDay),
         ],
+      }
+    }
+
+    // ==================== TOKEN TRADING MINI-GAME ====================
+    case 'ENTER_TOKEN_TRADING': {
+      if (!state.currentLocation?.hasStore) return state
+      const prices = generateTokenPrices()
+      return {
+        ...state,
+        phase: 'token_trading',
+        tokenPrices: prices,
+        tokenHoldings: {},
+        tradingRoundsLeft: 10, // 10 rounds to trade
+        messageLog: [
+          ...state.messageLog,
+          msg(`Welcome to the ${state.currentLocation.name} token exchange! You have 10 rounds to trade.`, 'system', state.day),
+        ],
+      }
+    }
+
+    case 'BUY_TOKEN': {
+      if (state.tradingRoundsLeft <= 0) return state
+      const token = state.tokenPrices.find(t => t.name === action.tokenName)
+      if (!token) return state
+      const cost = Math.round(token.price * action.amount * 100) / 100
+      if (state.inventory.sol < cost) return state
+
+      const currentHolding = state.tokenHoldings[action.tokenName] || 0
+      return {
+        ...state,
+        inventory: { ...state.inventory, sol: Math.round((state.inventory.sol - cost) * 100) / 100 },
+        tokenHoldings: { ...state.tokenHoldings, [action.tokenName]: currentHolding + action.amount },
+        messageLog: [
+          ...state.messageLog,
+          msg(`Bought ${action.amount} ${token.icon} ${action.tokenName} at ${token.price.toFixed(2)} SOL each (${cost.toFixed(2)} SOL total)`, 'success', state.day),
+        ],
+      }
+    }
+
+    case 'SELL_TOKEN': {
+      if (state.tradingRoundsLeft <= 0) return state
+      const token = state.tokenPrices.find(t => t.name === action.tokenName)
+      if (!token) return state
+      const currentHolding = state.tokenHoldings[action.tokenName] || 0
+      if (currentHolding < action.amount) return state
+
+      const revenue = Math.round(token.price * action.amount * 100) / 100
+      return {
+        ...state,
+        inventory: { ...state.inventory, sol: Math.round((state.inventory.sol + revenue) * 100) / 100 },
+        tokenHoldings: { ...state.tokenHoldings, [action.tokenName]: currentHolding - action.amount },
+        messageLog: [
+          ...state.messageLog,
+          msg(`Sold ${action.amount} ${token.icon} ${action.tokenName} at ${token.price.toFixed(2)} SOL each (+${revenue.toFixed(2)} SOL)`, 'success', state.day),
+        ],
+      }
+    }
+
+    case 'ADVANCE_MARKET': {
+      if (state.tradingRoundsLeft <= 0) return state
+      const newPrices = tickPrices(state.tokenPrices)
+      const roundsLeft = state.tradingRoundsLeft - 1
+      const messages = [...state.messageLog, msg(`Market tick! ${roundsLeft} rounds remaining.`, 'info', state.day)]
+
+      // Show price movements
+      for (let i = 0; i < newPrices.length; i++) {
+        const old = state.tokenPrices[i]
+        const cur = newPrices[i]
+        const pct = ((cur.price - old.price) / old.price * 100).toFixed(1)
+        const dir = cur.price > old.price ? '📈' : cur.price < old.price ? '📉' : '➡️'
+        messages.push(msg(`${cur.icon} ${cur.name}: ${old.price.toFixed(2)} → ${cur.price.toFixed(2)} SOL (${pct}%) ${dir}`, 'info', state.day))
+      }
+
+      if (roundsLeft === 0) {
+        messages.push(msg('Market closed! Auto-selling remaining positions...', 'system', state.day))
+      }
+
+      return {
+        ...state,
+        tokenPrices: newPrices,
+        tradingRoundsLeft: roundsLeft,
+        messageLog: messages,
+      }
+    }
+
+    case 'LEAVE_TOKEN_TRADING': {
+      // Auto-sell remaining holdings at current prices
+      let soldTotal = 0
+      const messages = [...state.messageLog]
+      let newSol = state.inventory.sol
+
+      for (const [name, qty] of Object.entries(state.tokenHoldings)) {
+        if (qty > 0) {
+          const token = state.tokenPrices.find(t => t.name === name)
+          if (token) {
+            const revenue = Math.round(token.price * qty * 100) / 100
+            newSol = Math.round((newSol + revenue) * 100) / 100
+            soldTotal += revenue
+            messages.push(msg(`Auto-sold ${qty} ${token.icon} ${name} for ${revenue.toFixed(2)} SOL`, 'info', state.day))
+          }
+        }
+      }
+
+      if (soldTotal > 0) {
+        messages.push(msg(`Token trading complete! Total from auto-sell: ${soldTotal.toFixed(2)} SOL`, 'success', state.day))
+      }
+
+      return {
+        ...state,
+        phase: 'landmark',
+        inventory: { ...state.inventory, sol: newSol },
+        tokenPrices: [],
+        tokenHoldings: {},
+        tradingRoundsLeft: 0,
+        messageLog: messages,
+      }
+    }
+
+    // ==================== RANDOM ENCOUNTERS ====================
+    case 'ENCOUNTER_CHOICE': {
+      if (!state.currentEncounter) return state
+      const choice = state.currentEncounter.choices.find(c => c.id === action.choiceId)
+      if (!choice) return state
+
+      let newInventory = state.inventory
+      let newParty = [...state.party]
+      let newDay = state.day
+      const messages = [...state.messageLog]
+
+      if (choice.outcome.inventoryChanges) {
+        newInventory = applyInventoryChanges(newInventory, choice.outcome.inventoryChanges)
+      }
+
+      if (choice.outcome.partyEffect) {
+        const result = applyPartyEffect(newParty, choice.outcome.partyEffect)
+        newParty = result.party
+      }
+
+      if (choice.outcome.healthChange) {
+        newParty = newParty.map(m => {
+          if (m.status === 'dead') return m
+          const hp = Math.max(0, Math.min(100, m.health + choice.outcome.healthChange!))
+          return { ...m, health: hp, status: hp <= 0 ? 'dead' as const : m.status }
+        })
+      }
+
+      if (choice.outcome.daysLost) {
+        newDay += choice.outcome.daysLost
+      }
+
+      messages.push(msg(choice.outcome.description, 'info', state.day))
+
+      return {
+        ...state,
+        inventory: newInventory,
+        party: newParty,
+        day: newDay,
+        health: getOverallHealth(newParty),
+        selectedEncounterChoice: choice,
+        messageLog: messages,
+      }
+    }
+
+    case 'DISMISS_ENCOUNTER': {
+      return {
+        ...state,
+        phase: 'traveling',
+        currentEncounter: null,
+        selectedEncounterChoice: null,
+      }
+    }
+
+    // ==================== SAVE/LOAD ====================
+    case 'LOAD_GAME': {
+      return { ...action.savedState }
+    }
+
+    case 'START_DAILY': {
+      return {
+        ...createInitialState(),
+        isDaily: true,
+        dailySeed: new Date().toISOString().slice(0, 10),
       }
     }
 
