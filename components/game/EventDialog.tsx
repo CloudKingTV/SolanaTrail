@@ -12,9 +12,12 @@ interface EventDialogProps {
 }
 
 const categoryIcon: Record<string, string> = {
+  disease: '🤒',
+  breakdown: '🔧',
+  weather: '🌩️',
+  theft: '🏴‍☠️',
+  trail: '🛤️',
   positive: '✨',
-  negative: '⚠️',
-  neutral: 'ℹ️',
   choice: '🤔',
 }
 
@@ -32,7 +35,7 @@ export function EventDialog({ event, selectedChoice, onChoice, onDismiss }: Even
           {event.choices.map((choice) => (
             <Button
               key={choice.id}
-              variant={event.category === 'negative' ? 'danger' : 'primary'}
+              variant={['disease', 'breakdown', 'weather', 'theft', 'trail'].includes(event.category) ? 'danger' : 'primary'}
               fullWidth
               onClick={() => onChoice(choice.id)}
             >

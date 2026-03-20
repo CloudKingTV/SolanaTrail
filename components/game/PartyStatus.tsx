@@ -37,8 +37,9 @@ export function PartyStatus({ party }: PartyStatusProps) {
             <div className="flex items-center gap-2">
               <span>{statusEmoji[member.status]}</span>
               <div>
-                <span className={statusColor[member.status]}>{member.name}</span>
-                <span className="text-sol-muted ml-1 text-[10px]">{member.role}</span>
+                <span className={statusColor[member.status]}>
+                  {member.isLeader ? '⭐ ' : ''}{member.name}
+                </span>
               </div>
             </div>
             {member.status !== 'dead' && (
