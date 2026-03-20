@@ -35,7 +35,7 @@ export function createInitialState(): GameState {
     huntingAmmoUsed: 0,
     huntingFoodGained: 0,
     startEpoch: 3,
-    currentWeather: 'clear',
+    currentWeather: 'bull',
   }
 }
 
@@ -66,26 +66,26 @@ export function calculateScore(state: GameState): number {
   return Math.round(baseScore * multiplier)
 }
 
-function getWeather(day: number, epoch: number): 'clear' | 'rainy' | 'cold' | 'hot' | 'snowy' {
-  // Epoch 1=early (cold), 3=middle (hot), 5=late (cold again)
+function getWeather(day: number, epoch: number): 'bull' | 'crab' | 'bear' | 'fomo' | 'winter' {
+  // Epoch 1=early (bear), 3=middle (fomo), 5=late (bear/winter)
   const effectiveDay = day + (epoch - 1) * 20
   const roll = Math.random()
 
-  if (effectiveDay > 150) { // late = cold/snowy
-    if (roll < 0.3) return 'cold'
-    if (roll < 0.4) return 'snowy'
-    if (roll < 0.6) return 'rainy'
-    return 'clear'
+  if (effectiveDay > 150) { // late = bear market / crypto winter
+    if (roll < 0.3) return 'bear'
+    if (roll < 0.4) return 'winter'
+    if (roll < 0.6) return 'crab'
+    return 'bull'
   }
-  if (effectiveDay > 80) { // mid = hot
-    if (roll < 0.2) return 'hot'
-    if (roll < 0.4) return 'rainy'
-    return 'clear'
+  if (effectiveDay > 80) { // mid = fomo season
+    if (roll < 0.2) return 'fomo'
+    if (roll < 0.4) return 'crab'
+    return 'bull'
   }
-  // early = rainy/cold
-  if (roll < 0.2) return 'cold'
-  if (roll < 0.4) return 'rainy'
-  return 'clear'
+  // early = crab/bear
+  if (roll < 0.2) return 'bear'
+  if (roll < 0.4) return 'crab'
+  return 'bull'
 }
 
 function applyInventoryChanges(inv: Inventory, changes: Partial<Inventory>): Inventory {
@@ -172,10 +172,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Warnings if under-prepared
       const warnings: MessageEntry[] = []
       if (state.inventory.oxen < 2) {
-        warnings.push(msg('Warning: You barely have any laptops. Travel will be slow!', 'warning', 1))
+        warnings.push(msg('Warning: You barely have any validators. Travel will be slow!', 'warning', 1))
       }
       if (state.inventory.food < 200) {
-        warnings.push(msg('Warning: You may not have enough ramen for the journey!', 'warning', 1))
+        warnings.push(msg('Warning: You may not have enough bandwidth for the journey!', 'warning', 1))
       }
 
       return {
@@ -235,11 +235,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const newHealth = getOverallHealth(newParty)
 
       const messages: MessageEntry[] = [...state.messageLog]
-      messages.push(msg(`Day ${newDay} — Traveled ${speed} blocks. Weather: ${weather}.`, 'info', newDay))
+      const weatherLabels: Record<string, string> = {
+        bull: 'Bull Market', crab: 'Crab Market', bear: 'Bear Market', fomo: 'FOMO Season', winter: 'Crypto Winter',
+      }
+      messages.push(msg(`Day ${newDay} — Traveled ${speed} blocks. Market: ${weatherLabels[weather] || weather}.`, 'info', newDay))
 
       // Check for starvation
       if (newFood <= 0) {
-        messages.push(msg('You\'re out of ramen! Your party is starving!', 'danger', newDay))
+        messages.push(msg('You\'re out of bandwidth! Your party is going dark!', 'danger', newDay))
       }
 
       // Check deaths
@@ -314,7 +317,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state, phase: 'gameOver', day: newDay, distanceTraveled: newDistance,
           inventory: newInventory, party: newParty, health: newHealth,
           currentLocation: newLocation, nextLocation, currentWeather: weather,
-          messageLog: [...messages, msg('You have no laptops left. Can\'t trade, can\'t move. It\'s over.', 'danger', newDay)],
+          messageLog: [...messages, msg('All your validators are offline. No nodes, no network. It\'s over.', 'danger', newDay)],
         }
         return { ...finalState, score: calculateScore(finalState) }
       }
@@ -336,7 +339,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Health/resource warnings
       if (newHealth === 'poor') messages.push(msg('Your party\'s health is poor. Consider resting.', 'warning', newDay))
       if (newHealth === 'very_poor') messages.push(msg('Your party\'s health is very poor! Rest immediately!', 'danger', newDay))
-      if (newFood < 100) messages.push(msg('Warning: Ramen supply running low!', 'warning', newDay))
+      if (newFood < 100) messages.push(msg('Warning: Bandwidth running low!', 'warning', newDay))
       if (newInventory.sol < 10) messages.push(msg('Warning: SOL reserves low!', 'warning', newDay))
 
       return {
@@ -438,43 +441,41 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       switch (action.choice) {
         case 'ford': {
-          // Safe if depth <= 2.5, risky if higher
+          // Bridge directly — safe if congestion low, risky if high
           if (depth <= 2.5) {
-            messages.push(msg(`You forded the ${state.currentLocation?.name}. The crossing was smooth.`, 'success', state.day))
+            messages.push(msg(`Bridged through ${state.currentLocation?.name} with no issues. Clean transaction.`, 'success', state.day))
           } else if (depth <= 4) {
-            // Moderate risk
             if (Math.random() < 0.4) {
               const lostFood = Math.round(Math.random() * 50 + 20)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
-              messages.push(msg(`The crossing was rough! You lost ${lostFood} ramen packs to the current.`, 'warning', state.day))
+              messages.push(msg(`The bridge lagged! Lost ${lostFood} ramen in failed transactions.`, 'warning', state.day))
             } else {
-              messages.push(msg('You made it across safely, but it was close!', 'success', state.day))
+              messages.push(msg('Bridged across successfully, but it was sketchy for a minute.', 'success', state.day))
             }
           } else {
-            // High risk — possible drowning, lost supplies
             if (Math.random() < 0.3) {
               const result = applyPartyEffect(newParty, { type: 'damage', value: 50, target: 'random' })
               newParty = result.party
               const lostFood = Math.round(Math.random() * 100 + 50)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
-              messages.push(msg(`Disaster! The current was too strong. ${result.affectedName} nearly drowned! Lost ${lostFood} ramen.`, 'danger', state.day))
+              messages.push(msg(`Bridge exploit! ${result.affectedName} got rekt in the transfer! Lost ${lostFood} ramen.`, 'danger', state.day))
             } else {
               const lostFood = Math.round(Math.random() * 30 + 10)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
-              messages.push(msg(`A harrowing crossing! Lost some supplies but everyone survived.`, 'warning', state.day))
+              messages.push(msg(`Rough bridge transfer. Lost some supplies but everyone made it.`, 'warning', state.day))
             }
           }
           break
         }
 
         case 'caulk_and_float': {
-          // Moderate risk regardless of depth
+          // Wrap tokens — moderate risk
           if (Math.random() < 0.25) {
             const lostFood = Math.round(Math.random() * 40 + 10)
             newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
-            messages.push(msg('Your sealed wagon tipped! Some supplies were lost.', 'warning', state.day))
+            messages.push(msg('Wrapped token transfer failed mid-swap! Some supplies lost.', 'warning', state.day))
           } else {
-            messages.push(msg('You caulked the wagon and floated across successfully!', 'success', state.day))
+            messages.push(msg('Wrapped your tokens and bridged across safely. Clean swap.', 'success', state.day))
           }
           break
         }
@@ -483,10 +484,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           const ferryCost = Math.round(depth * 5)
           if (newInventory.sol >= ferryCost) {
             newInventory = { ...newInventory, sol: newInventory.sol - ferryCost }
-            messages.push(msg(`You paid ${ferryCost} SOL for the ferry. Safe crossing!`, 'success', state.day))
+            messages.push(msg(`Paid ${ferryCost} SOL for a secure bridge. Guaranteed transfer.`, 'success', state.day))
           } else {
-            messages.push(msg('You can\'t afford the ferry! You\'ll have to find another way.', 'danger', state.day))
-            return state // Don't advance
+            messages.push(msg('Not enough SOL for the secure bridge! Find another way across.', 'danger', state.day))
+            return state
           }
           break
         }
@@ -497,7 +498,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           const foodPerDay = RATIONS_INFO[state.rations].foodPerPersonPerDay * aliveCount
           newInventory = { ...newInventory, food: Math.max(0, newInventory.food - foodPerDay) }
           const newDepth = Math.max(1, state.riverDepth - Math.random() * 1.5)
-          messages.push(msg(`You waited a day. Water level changed to ${newDepth.toFixed(1)} feet.`, 'info', newDay))
+          messages.push(msg(`Waited a day for congestion to drop. Network load now ${newDepth.toFixed(1)}/10.`, 'info', newDay))
           return {
             ...state, day: newDay, inventory: newInventory, party: newParty,
             riverDepth: newDepth, messageLog: messages,
@@ -640,7 +641,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         huntingFoodGained: 0,
         messageLog: [
           ...state.messageLog,
-          msg(`Alpha hunt complete! Gained ${foodGained} ramen, used ${boxesUsed} pass(es).`, 'info', state.day),
+          msg(`Scouting complete! Gained ${foodGained} bandwidth, used ${boxesUsed} alpha pass(es).`, 'info', state.day),
         ],
       }
     }

@@ -1,7 +1,7 @@
 import { Location } from './types'
 
-// 18 landmarks matching the classic Oregon Trail structure:
-// Start → River crossings → Forts → Landmarks → Danger zones → End
+// 18 landmarks on the journey through Solana's ecosystem:
+// Start at Genesis Block → navigate DEXs, bridges, protocols → reach Mainnet Launch
 // Total distance: 2000 blocks
 
 export const TOTAL_DISTANCE = 2000
@@ -11,232 +11,232 @@ export const LOCATIONS: Location[] = [
   {
     id: 'genesis-block',
     name: 'Genesis Block',
-    description: 'Where every degen\'s journey begins. Matt\'s Supply Shop has everything you need for the trail to Mainnet.',
+    description: 'Where every journey starts. Matt\'s Supply Shop has everything you need before heading into the Solana ecosystem.',
     distance: 0,
     type: 'start',
     hasStore: true,
     priceMultiplier: 1.0,
     talkTexts: [
-      '"Don\'t forget to stock up on laptops before you leave. Can\'t trade without \'em."',
-      '"I heard the DeFi Swamp is rough this time of year. Bring extra ramen."',
-      '"My cousin tried the trail last month. Lost all his SOL in a rug pull at Token Creek."',
+      '"Stock up on laptops before you leave. Can\'t do anything out there without a rig."',
+      '"I heard the pump.fun plains are wild right now. Bring extra ramen."',
+      '"My cousin tried the trail last epoch. Got rugged before he even reached Raydium."',
     ],
   },
-  // 2. RIVER CROSSING
+  // 2. BRIDGE — first liquidity obstacle
   {
     id: 'token-creek',
-    name: 'Token Creek Crossing',
-    description: 'A swift stream of liquidity. Cross carefully — many have lost their bags here.',
+    name: 'Token Creek Bridge',
+    description: 'Your first bridge crossing. Network congestion varies — time it right or pay for priority.',
     distance: 100,
     type: 'river_crossing',
     hasStore: false,
     priceMultiplier: 1.0,
   },
-  // 3. RIVER CROSSING
+  // 3. BRIDGE — deeper liquidity pool
   {
     id: 'liquidity-river',
-    name: 'Liquidity Pool River',
-    description: 'A deep pool of paired tokens. The current is strong and the impermanent loss is real.',
+    name: 'Liquidity Pool Crossing',
+    description: 'A massive liquidity pool between you and the next protocol. Slippage is real if you rush it.',
     distance: 200,
     type: 'river_crossing',
     hasStore: false,
     priceMultiplier: 1.0,
   },
-  // 4. FORT
+  // 4. FORT — Phantom Wallet outpost
   {
-    id: 'fort-faucet',
-    name: 'Fort Faucet',
-    description: 'A small outpost where devnet SOL flows freely. Resupply here — prices are still reasonable.',
+    id: 'fort-phantom',
+    name: 'Phantom Outpost',
+    description: 'A Phantom wallet hub where travelers resupply. Prices are still fair this close to Genesis Block.',
     distance: 325,
     type: 'fort',
     hasStore: true,
     priceMultiplier: 1.25,
     talkTexts: [
       '"The trail ahead is long. Make sure you have enough ramen."',
-      '"A group ahead of us lost 3 laptops to a coffee spill. Keep your drinks away from your rigs."',
-      '"I traded 2 hoodies for 50 ramen packs at the last stop. Fair deal."',
+      '"A group ahead of us lost 3 laptops to a coffee spill. Protect your rigs."',
+      '"I traded 2 hoodies for 50 ramen at the last stop. Not bad."',
     ],
   },
-  // 5. LANDMARK
+  // 5. LANDMARK — pump.fun
   {
-    id: 'chimney-hash',
-    name: 'Memecoin Mountain',
-    description: 'A towering monument built from the ashes of a thousand rugged tokens. A reminder of what was.',
+    id: 'pump-fun-plains',
+    name: 'pump.fun Plains',
+    description: 'An endless field of freshly launched tokens. 99% will rug, but the 1% can change your life. Tread carefully.',
     distance: 450,
     type: 'landmark',
     hasStore: false,
     priceMultiplier: 1.0,
     talkTexts: [
-      '"So many memecoins have died on this mountain. Pour one out for $BONK v1."',
-      '"They say if you hold a coin that rugs here, the ghost of the dev still follows you."',
+      '"I watched a token go from 0 to $10M market cap in 20 minutes out here. Then it rugged."',
+      '"Someone launched a coin called $FART and made six figures. This place is wild."',
     ],
   },
-  // 6. FORT
+  // 6. FORT — Raydium trading hub
   {
-    id: 'fort-hodl',
-    name: 'Fort HODL',
-    description: 'A fortress of diamond hands. The traders here never sell, no matter what. Prices are climbing.',
+    id: 'fort-raydium',
+    name: 'Raydium Trading Post',
+    description: 'The main DEX hub on this stretch of trail. Deep liquidity, good routes, but prices are climbing.',
     distance: 600,
     type: 'fort',
     hasStore: true,
     priceMultiplier: 1.5,
     talkTexts: [
-      '"Careful in the DeFi Swamp ahead. The yields look good but the risks are real."',
-      '"My party member clicked a phishing link last week. Took 3 days to recover."',
-      '"A whale passed through yesterday. Bought every laptop in the store."',
+      '"Careful past here. The MEV bots are thick in the next stretch."',
+      '"My party member approved a sketchy contract last week. Took 3 days to recover."',
+      '"A whale passed through yesterday. Bought everything in the shop."',
     ],
   },
-  // 7. LANDMARK
+  // 7. LANDMARK — halfway point
   {
-    id: 'independence-block',
-    name: 'Independence Block',
-    description: 'A massive monolith inscribed with the Declaration of Decentralization. Halfway to Mainnet.',
+    id: 'halfway-block',
+    name: 'The Halfway Hash',
+    description: 'A monument marking the halfway point to Mainnet. If you made it here, you\'ve got a shot.',
     distance: 750,
     type: 'landmark',
     hasStore: false,
     priceMultiplier: 1.0,
     talkTexts: [
-      '"Sign your wallet address on the block for good luck!"',
-      '"We\'re halfway there. If you made it this far, you\'re gonna make it."',
+      '"Sign the block with your wallet for good luck."',
+      '"We\'re halfway there. Keep your head down and your ramen stocked."',
     ],
   },
-  // 8. LANDMARK (South Pass equivalent)
+  // 8. LANDMARK — MEV Forest
   {
-    id: 'fomo-pass',
-    name: 'FOMO Pass',
-    description: 'The great divide. From here, every choice feels urgent. Choose your path wisely — or ape recklessly.',
+    id: 'mev-forest',
+    name: 'MEV Forest',
+    description: 'A dense forest of sandwich bots and front-runners. Every transaction here is a gamble. Stay alert.',
     distance: 900,
     type: 'landmark',
     hasStore: false,
     priceMultiplier: 1.0,
     talkTexts: [
-      '"The trail splits here. Both paths lead to Mainnet, but neither is easy."',
-      '"Stock up on alpha passes. The scouting grounds ahead are full of opportunities."',
+      '"I got sandwiched three times before I figured out to use Jito bundles."',
+      '"The bots here will front-run you before you can blink. Set your slippage low."',
     ],
   },
-  // 9. RIVER CROSSING
+  // 9. BRIDGE — Wormhole bridge
   {
-    id: 'bridge-canyon',
-    name: 'Bridge Canyon Crossing',
-    description: 'A vast chasm between two chains. The cross-chain bridge sways in the wind. DYOR before crossing.',
+    id: 'wormhole-bridge',
+    name: 'Wormhole Bridge',
+    description: 'The main cross-chain bridge. Congestion spikes when everyone is bridging at once. Pick your moment.',
     distance: 1000,
     type: 'river_crossing',
     hasStore: false,
     priceMultiplier: 1.0,
   },
-  // 10. FORT
+  // 10. FORT — Jupiter hub
   {
-    id: 'fort-wormhole',
-    name: 'Fort Wormhole',
-    description: 'An outpost at the bridge. Supplies are expensive this far from Genesis Block.',
+    id: 'fort-jupiter',
+    name: 'Jupiter Exchange',
+    description: 'The biggest swap aggregator on the trail. Best routes, best prices — but supplies cost more this far out.',
     distance: 1050,
     type: 'fort',
     hasStore: true,
     priceMultiplier: 1.75,
     talkTexts: [
-      '"The MEV Forest is ahead. Those sandwich bots will eat your lunch if you\'re not careful."',
-      '"I lost half my ramen to a scam airdrop last week. Don\'t click anything suspicious."',
+      '"Jupiter routes are the best out here. But everything costs more this far from Genesis."',
+      '"I heard the next bridge is sketchy. Full of unverified tokens."',
     ],
   },
-  // 11. LANDMARK
+  // 11. LANDMARK — DAO governance zone
   {
     id: 'dao-springs',
     name: 'DAO Springs',
-    description: 'A natural gathering place where governance proposals bubble up from the ground.',
+    description: 'A gathering place where governance proposals are debated. Rest here and vote on community decisions.',
     distance: 1150,
     type: 'landmark',
     hasStore: false,
     priceMultiplier: 1.0,
     talkTexts: [
-      '"We voted to increase staking rewards here. Passed 67% to 33%."',
-      '"The springs have healing properties. Rest here if your party is sick."',
+      '"We voted to increase staking rewards. Passed 67% to 33%."',
+      '"Rest up here. The springs heal faster than anywhere else on the trail."',
     ],
   },
-  // 12. FORT
+  // 12. FORT — Marinade staking outpost
   {
-    id: 'fort-jupiter',
-    name: 'Fort Jupiter',
-    description: 'The largest trading hub on the trail. Every swap route runs through here. Prices are steep.',
+    id: 'fort-marinade',
+    name: 'Marinade Staking Hall',
+    description: 'A staking hub where travelers lock up SOL for yield. Supplies are expensive but the selection is solid.',
     distance: 1300,
     type: 'fort',
     hasStore: true,
     priceMultiplier: 2.0,
     talkTexts: [
-      '"Jupiter has the best routes. But the prices... everything costs more out here."',
-      '"The Snake River ahead is treacherous. Many degens have been lost."',
+      '"Stake some SOL here if you can. The APY isn\'t what it used to be, but it helps."',
+      '"The Honeypot Swamp ahead is nasty. Don\'t buy any token that looks too good to be true."',
     ],
   },
-  // 13. RIVER CROSSING
+  // 13. BRIDGE — dangerous token swap
   {
-    id: 'snake-river',
-    name: 'Snake Token River',
-    description: 'A winding river of unverified tokens. The current is unpredictable and full of honeypots.',
+    id: 'honeypot-swamp',
+    name: 'Honeypot Swamp',
+    description: 'A treacherous swap zone full of unverified tokens and hidden honeypots. Bridge through carefully.',
     distance: 1400,
     type: 'river_crossing',
     hasStore: false,
     priceMultiplier: 1.0,
   },
-  // 14. FORT
+  // 14. FORT — audit checkpoint
   {
     id: 'fort-audit',
-    name: 'Fort Audit',
-    description: 'A security checkpoint. Auditors inspect every contract passing through. Better have your code clean.',
+    name: 'OtterSec Checkpoint',
+    description: 'A security audit station. Contracts get inspected here. Resupply before the final stretch.',
     distance: 1550,
     type: 'fort',
     hasStore: true,
     priceMultiplier: 2.0,
     talkTexts: [
-      '"Everything gets audited here. If your bags are clean, you\'ll be fine."',
-      '"Liquidation Mountains ahead are brutal. Make sure your rigs are charged."',
+      '"Everything gets audited here. If your bags are clean, you\'re good."',
+      '"Liquidation Range ahead is brutal. Make sure your gear is in order."',
     ],
   },
-  // 15. LANDMARK (Blue Mountains equivalent)
+  // 15. LANDMARK — leveraged danger zone
   {
-    id: 'liquidation-mountains',
-    name: 'Liquidation Mountains',
-    description: 'Treacherous peaks where leveraged positions get wrecked. The air is thin and the margin calls are many.',
+    id: 'liquidation-range',
+    name: 'Liquidation Range',
+    description: 'A brutal stretch where overleveraged positions get wiped. Market swings hit hardest here.',
     distance: 1700,
     type: 'landmark',
     hasStore: false,
     priceMultiplier: 1.0,
     talkTexts: [
-      '"I got liquidated three times on the way up. Lost everything."',
-      '"The descent is worse than the climb. Keep your leverage low."',
+      '"I got liquidated three times up here. Don\'t use leverage on the trail."',
+      '"The bear markets hit harder at this altitude. Keep your hoodies on."',
     ],
   },
-  // 16. FORT
+  // 16. FORT — last resupply
   {
     id: 'fort-testnet',
-    name: 'Fort Testnet',
-    description: 'The last outpost before Mainnet. Last chance to buy supplies. Everything\'s expensive.',
+    name: 'Devnet Outpost',
+    description: 'The last outpost before Mainnet. Final chance to stock up. Prices are at their highest.',
     distance: 1800,
     type: 'fort',
     hasStore: true,
     priceMultiplier: 2.5,
     talkTexts: [
-      '"This is it. Mainnet is just ahead. Stock up on everything you can."',
-      '"I heard the final stretch has insane congestion. Plan accordingly."',
+      '"This is it. Mainnet is just ahead. Buy everything you can afford."',
+      '"The final stretch has crazy congestion. Don\'t rush it."',
     ],
   },
-  // 17. LANDMARK (The Dalles equivalent — final challenge)
+  // 17. LANDMARK — final gauntlet
   {
     id: 'the-mempool',
     name: 'The Mempool',
-    description: 'A churning mass of pending transactions. You can try to push through or pay to skip the queue.',
+    description: 'A massive queue of pending transactions. The final bottleneck before Mainnet. Push through or pay up.',
     distance: 1900,
     type: 'landmark',
     hasStore: false,
     priceMultiplier: 1.0,
     talkTexts: [
-      '"The mempool is backed up. Could take days to confirm."',
-      '"Pay the priority fee and you\'ll be through in no time."',
+      '"The mempool is backed up. Could take days to get through."',
+      '"Pay priority fees and you\'ll skip the queue. Worth it this close to the end."',
     ],
   },
   // 18. END
   {
     id: 'mainnet-launch',
     name: 'Mainnet Launch',
-    description: 'You made it! Confetti rains down as your journey reaches its end. You\'re officially on Mainnet. LFG!',
+    description: 'You made it. Your party survived the entire Solana ecosystem. You\'re officially on Mainnet.',
     distance: 2000,
     type: 'end',
     hasStore: false,

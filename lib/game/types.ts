@@ -68,47 +68,47 @@ export interface PartyMember {
   isLeader: boolean
 }
 
-// --- PACE (like Steady/Strenuous/Grueling) ---
+// --- PACE (how hard you push your crew) ---
 export type Pace = 'steady' | 'strenuous' | 'grueling'
 
 export const PACE_INFO: Record<Pace, { label: string; description: string; icon: string; milesPerDay: number }> = {
   steady: {
-    label: 'Steady',
-    description: 'Travel 8 hrs/day. Many rests, rarely tired.',
-    icon: '🚶',
+    label: 'Diamond Hands',
+    description: 'Slow and steady. Chill vibes, healthy crew.',
+    icon: '💎',
     milesPerDay: 12,
   },
   strenuous: {
-    label: 'Strenuous',
-    description: 'Travel 12 hrs/day. Rest only when needed. Finish tired.',
-    icon: '🏃',
+    label: 'Active Trader',
+    description: 'Pushing it. Faster progress but your crew gets tired.',
+    icon: '📈',
     milesPerDay: 18,
   },
   grueling: {
-    label: 'Grueling',
-    description: 'Travel 16 hrs/day. Rarely rest. Health suffers.',
-    icon: '💀',
+    label: 'Full Degen',
+    description: 'Max speed, no sleep. Your crew will suffer.',
+    icon: '🦍',
     milesPerDay: 25,
   },
 }
 
-// --- RATIONS (like Filling/Meager/Bare Bones) ---
+// --- RATIONS (how much ramen your crew eats) ---
 export type Rations = 'filling' | 'meager' | 'bare_bones'
 
 export const RATIONS_INFO: Record<Rations, { label: string; description: string; foodPerPersonPerDay: number }> = {
   filling: {
-    label: 'Filling',
-    description: '3 units of food per person per day.',
+    label: 'Well Fed',
+    description: '3 ramen per person per day. Keeps everyone healthy.',
     foodPerPersonPerDay: 3,
   },
   meager: {
-    label: 'Meager',
-    description: '2 units of food per person per day.',
+    label: 'On a Budget',
+    description: '2 ramen per person per day. Saving supplies.',
     foodPerPersonPerDay: 2,
   },
   bare_bones: {
-    label: 'Bare Bones',
-    description: '1 unit of food per person per day. Health may suffer.',
+    label: 'Fasting for Gains',
+    description: '1 ramen per person per day. Health will suffer.',
     foodPerPersonPerDay: 1,
   },
 }
@@ -221,7 +221,7 @@ export interface GameState {
   huntingFoodGained: number
   // Departure epoch
   startEpoch: number // 1-5 (like March-July)
-  currentWeather: 'clear' | 'rainy' | 'cold' | 'hot' | 'snowy'
+  currentWeather: 'bull' | 'crab' | 'bear' | 'fomo' | 'winter'
 }
 
 export interface MessageEntry {
