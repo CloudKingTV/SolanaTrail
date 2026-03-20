@@ -32,7 +32,7 @@ export function Button({
       className={`
         min-h-[48px] px-6 py-3 rounded-lg border font-semibold text-sm
         transition-all duration-150 btn-press
-        disabled:opacity-40 disabled:cursor-not-allowed
+        disabled:opacity-30 disabled:cursor-not-allowed disabled:saturate-0
         ${variantClasses[variant]}
         ${fullWidth ? 'w-full' : ''}
         ${className}

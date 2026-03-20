@@ -53,7 +53,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             SOLANA<br />TRAIL
           </h1>
           <p className="text-sm text-sol-muted max-w-xs leading-relaxed">
-            The year is 2024. Your party of 5 must navigate the entire Solana
+            Your party of 5 must navigate the entire Solana
             ecosystem — 2,000 blocks from Genesis Block to Mainnet Launch.
           </p>
           {state.seekerDetected && (

@@ -728,9 +728,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         }
       })
 
+      // Stay at landmark if resting there, otherwise return to traveling
+      const restPhase = (state.phase === 'landmark') ? 'landmark' : 'traveling'
+
       return {
         ...state,
-        phase: 'traveling',
+        phase: restPhase,
         day: newDay,
         inventory: { ...state.inventory, food: Math.max(0, state.inventory.food - foodPerDay) },
         party: healedParty,

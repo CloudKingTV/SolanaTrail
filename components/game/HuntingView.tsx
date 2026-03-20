@@ -13,14 +13,16 @@ interface HuntingViewProps {
 }
 
 const TARGETS = [
-  { id: 'rabbit', name: 'Shitcoin Flip', icon: '🪙', reward: 5, difficulty: 'Easy' },
-  { id: 'deer', name: 'NFT Snipe', icon: '🖼️', reward: 35, difficulty: 'Medium' },
-  { id: 'bear', name: 'Airdrop Farm', icon: '🌾', reward: 80, difficulty: 'Hard' },
-  { id: 'buffalo', name: 'Gem Find', icon: '💎', reward: 100, difficulty: 'Very Hard' },
+  { id: 'rabbit', name: 'Shitcoin Flip', icon: '🪙', reward: 5, hitRate: '80%', difficulty: 'Easy' },
+  { id: 'deer', name: 'NFT Snipe', icon: '🖼️', reward: 35, hitRate: '50%', difficulty: 'Medium' },
+  { id: 'bear', name: 'Airdrop Farm', icon: '🌾', reward: 80, hitRate: '25%', difficulty: 'Hard' },
+  { id: 'buffalo', name: 'Gem Find', icon: '💎', reward: 100, hitRate: '15%', difficulty: 'Rare' },
 ]
 
 export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, messages }: HuntingViewProps) {
   const maxFood = 100
+  const atMax = foodGained >= maxFood
+  const outOfAmmo = ammoRemaining <= 0
 
   return (
     <div className="flex flex-col h-full">
@@ -32,18 +34,30 @@ export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, mess
         <div className="flex justify-center gap-4 text-xs">
           <div>
             <span className="text-sol-muted">Alpha: </span>
-            <span className={ammoRemaining <= 0 ? 'text-danger' : 'text-sol-text'}>
+            <span className={outOfAmmo ? 'text-danger' : 'text-sol-text'}>
               {ammoRemaining}
             </span>
           </div>
           <div>
             <span className="text-sol-muted">Data found: </span>
-            <span className="text-sol-green">{foodGained}/{maxFood}</span>
+            <span className={atMax ? 'text-sol-green font-bold' : 'text-sol-green'}>{foodGained}/{maxFood}</span>
           </div>
         </div>
-        <p className="text-[10px] text-sol-muted">
-          Scout for alpha to earn data rewards. Max {maxFood} GB per session.
-        </p>
+        {atMax && (
+          <p className="text-[10px] text-sol-green font-semibold">
+            Max data reached! Finish scouting to collect.
+          </p>
+        )}
+        {outOfAmmo && !atMax && (
+          <p className="text-[10px] text-danger">
+            Out of alpha passes! Finish scouting.
+          </p>
+        )}
+        {!atMax && !outOfAmmo && (
+          <p className="text-[10px] text-sol-muted">
+            Scout for alpha to earn data rewards. Max {maxFood} GB per session.
+          </p>
+        )}
       </div>
 
       {/* Messages */}
@@ -58,12 +72,12 @@ export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, mess
             <button
               key={target.id}
               onClick={() => onShoot(target.id)}
-              disabled={ammoRemaining <= 0 || foodGained >= maxFood}
+              disabled={outOfAmmo || atMax}
               className="p-3 rounded-lg border border-sol-border bg-sol-card hover:bg-sol-darker active:bg-sol-darker disabled:opacity-40 transition-all btn-press text-center"
             >
               <div className="text-2xl">{target.icon}</div>
               <div className="text-[10px] font-semibold text-sol-text">{target.name}</div>
-              <div className="text-[10px] text-sol-muted">+{target.reward} GB · {target.difficulty}</div>
+              <div className="text-[10px] text-sol-muted">+{target.reward} GB · {target.hitRate}</div>
             </button>
           ))}
         </div>
