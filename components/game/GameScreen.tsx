@@ -179,7 +179,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             onTalk={() => dispatch({ type: 'TALK_TO_PEOPLE' })}
             onTrade={() => dispatch({ type: 'ENTER_TRADING' })}
             onRest={() => dispatch({ type: 'REST' })}
-            messages={state.messageLog}
+            messages={state.messageLog.filter(m => m.day >= state.day)}
           />
         )}
 
@@ -200,7 +200,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             foodGained={state.huntingFoodGained}
             onShoot={(targetId) => dispatch({ type: 'HUNT_SHOOT', targetId })}
             onFinish={() => dispatch({ type: 'END_HUNTING' })}
-            messages={state.messageLog}
+            messages={state.messageLog.filter(m => m.day >= state.day)}
           />
         )}
 
