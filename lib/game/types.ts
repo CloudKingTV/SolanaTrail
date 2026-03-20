@@ -6,6 +6,7 @@
 // --- GAME PHASES (matches classic Oregon Trail flow) ---
 export type GamePhase =
   | 'title'
+  | 'tutorial'
   | 'profession_select'
   | 'party_naming'
   | 'epoch_select'
@@ -232,6 +233,8 @@ export interface MessageEntry {
 
 // --- ACTIONS ---
 export type GameAction =
+  | { type: 'START_TUTORIAL' }
+  | { type: 'SKIP_TUTORIAL' }
   | { type: 'SELECT_PROFESSION'; profession: Profession }
   | { type: 'SET_PARTY_NAMES'; names: string[] }
   | { type: 'SET_EPOCH'; epoch: number }

@@ -100,6 +100,15 @@ function applyInventoryChanges(inv: Inventory, changes: Partial<Inventory>): Inv
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
+    // ==================== TUTORIAL ====================
+    case 'START_TUTORIAL': {
+      return { ...state, phase: 'tutorial' }
+    }
+
+    case 'SKIP_TUTORIAL': {
+      return { ...state, phase: 'profession_select' }
+    }
+
     // ==================== SETUP FLOW ====================
     case 'SELECT_PROFESSION': {
       return {

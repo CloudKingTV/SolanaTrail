@@ -17,6 +17,7 @@ import { GeneralStore } from './GeneralStore'
 import { RiverCrossing } from './RiverCrossing'
 import { LandmarkView } from './LandmarkView'
 import { HuntingView } from './HuntingView'
+import { Tutorial } from './Tutorial'
 
 interface GameScreenProps {
   walletAddress?: string
@@ -47,10 +48,16 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
 
         <div className="w-full max-w-xs space-y-3">
           <button
-            onClick={() => dispatch({ type: 'SELECT_PROFESSION', profession: PROFESSIONS[0] })}
+            onClick={() => dispatch({ type: 'START_TUTORIAL' })}
             className="w-full min-h-[56px] px-8 py-4 rounded-xl border-2 border-sol-green bg-sol-green/10 text-sol-green font-pixel text-xs hover:bg-sol-green/20 active:bg-sol-green/30 transition-all btn-press"
           >
             START TRAIL
+          </button>
+          <button
+            onClick={() => dispatch({ type: 'SKIP_TUTORIAL' })}
+            className="w-full py-2 text-[10px] text-sol-muted hover:text-sol-text transition-colors"
+          >
+            Skip Tutorial
           </button>
         </div>
 
@@ -65,6 +72,11 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
         </div>
       </div>
     )
+  }
+
+  // ==================== TUTORIAL ====================
+  if (state.phase === 'tutorial') {
+    return <Tutorial onComplete={() => dispatch({ type: 'SKIP_TUTORIAL' })} />
   }
 
   // ==================== PROFESSION SELECT ====================
