@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readFile, writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
+import { kv } from '@vercel/kv'
 
 interface LeaderboardEntry {
   playerName: string
@@ -17,25 +16,23 @@ interface LeaderboardEntry {
   timestamp: number
 }
 
-const DATA_DIR = join(process.cwd(), 'data')
 const MAX_ENTRIES = 50
 
-function dataFile(type: string): string {
-  return join(DATA_DIR, type === 'daily' ? 'leaderboard-daily.json' : 'leaderboard.json')
+function kvKey(type: string): string {
+  return type === 'daily' ? 'leaderboard:daily' : 'leaderboard:normal'
 }
 
 async function readEntries(type: string): Promise<LeaderboardEntry[]> {
   try {
-    const data = await readFile(dataFile(type), 'utf-8')
-    return JSON.parse(data)
+    const entries = await kv.get<LeaderboardEntry[]>(kvKey(type))
+    return entries || []
   } catch {
     return []
   }
 }
 
 async function writeEntries(type: string, entries: LeaderboardEntry[]): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true })
-  await writeFile(dataFile(type), JSON.stringify(entries, null, 2))
+  await kv.set(kvKey(type), entries)
 }
 
 export async function GET(req: NextRequest) {
