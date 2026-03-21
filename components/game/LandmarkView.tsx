@@ -22,9 +22,9 @@ export function LandmarkView({
   const isFort = location.hasStore
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Location header */}
-      <div className="p-4 border-b border-sol-border text-center space-y-2">
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Location header — fixed at top */}
+      <div className="shrink-0 p-4 border-b border-sol-border text-center space-y-2">
         <div className="text-3xl">
           {isFort ? '🏰' : location.type === 'landmark' ? '🗿' : '📍'}
         </div>
@@ -41,13 +41,13 @@ export function LandmarkView({
         )}
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 min-h-0">
+      {/* Messages — scrollable middle section */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <MessageLog messages={messages} />
       </div>
 
-      {/* Actions */}
-      <div className="p-3 space-y-2 border-t border-sol-border">
+      {/* Actions — fixed at bottom */}
+      <div className="shrink-0 p-3 space-y-2 border-t border-sol-border bg-sol-darker">
         <div className="grid grid-cols-2 gap-2">
           <Button variant="ghost" fullWidth onClick={onLookAround} className="text-[10px]">
             👀 Look Around
