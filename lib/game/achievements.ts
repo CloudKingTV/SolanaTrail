@@ -128,3 +128,38 @@ export function saveAchievements(ids: string[]) {
     // silent fail
   }
 }
+
+// Server-synced versions
+
+export async function loadAchievementsServer(walletAddress?: string): Promise<string[]> {
+  try {
+    const params = walletAddress ? `?wallet=${walletAddress}` : ''
+    const res = await fetch(`/api/achievements${params}`, { cache: 'no-store' })
+    if (!res.ok) throw new Error('Failed to fetch')
+    const serverIds: string[] = await res.json()
+    const localIds = loadAchievements()
+    const merged = [...new Set([...serverIds, ...localIds])]
+    // Sync localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
+    }
+    return merged
+  } catch {
+    return loadAchievements()
+  }
+}
+
+export async function saveAchievementsServer(ids: string[], walletAddress?: string) {
+  // Save locally first
+  saveAchievements(ids)
+  // Sync to server
+  try {
+    await fetch('/api/achievements', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids, walletAddress: walletAddress || 'anonymous' }),
+    })
+  } catch {
+    // localStorage has it as fallback
+  }
+}

@@ -3,9 +3,9 @@
 import { useReducer, useState, useEffect, useCallback, useRef } from 'react'
 import { gameReducer, createInitialState, calculateScore } from '@/lib/game/engine'
 import { Pace, Rations, Inventory, PROFESSIONS } from '@/lib/game/types'
-import { checkAchievements, createInitialStats, saveAchievements, loadAchievements, GameStats } from '@/lib/game/achievements'
+import { checkAchievements, createInitialStats, saveAchievementsServer, loadAchievementsServer, GameStats } from '@/lib/game/achievements'
 import { saveGame, loadGame, deleteSave, hasSavedGame, getDailySeed, hasDailyBeenPlayed, hasDailyBeenPlayedServer, markDailyPlayedServer, saveDailyScore } from '@/lib/game/save'
-import { addGameToHistory, getGameHistory, getGameHistoryCount, GameHistoryEntry } from '@/lib/game/history'
+import { addGameToHistoryServer, fetchGameHistoryServer, getGameHistoryCount, GameHistoryEntry } from '@/lib/game/history'
 import { submitScoreAPI, LeaderboardEntry } from '@/lib/solana/leaderboard'
 import { StatusBar } from './StatusBar'
 import { MessageLog } from './MessageLog'
@@ -54,10 +54,13 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
   const [allAchievements, setAllAchievements] = useState<string[]>([])
   const statsRef = useRef<GameStats>(createInitialStats())
 
-  // Load persisted achievements and history count on mount
+  // Load persisted achievements and history count on mount (server-synced)
   useEffect(() => {
-    setAllAchievements(loadAchievements())
+    loadAchievementsServer(walletAddress).then(ids => setAllAchievements(ids))
     setHistoryCount(getGameHistoryCount())
+    // Also sync history from server to update count
+    fetchGameHistoryServer(walletAddress).then(entries => setHistoryCount(entries.length))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Check server-side daily challenge status on mount
@@ -102,7 +105,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
         setNewAchievements(earned)
         const updated = [...new Set([...allAchievements, ...earned])]
         setAllAchievements(updated)
-        saveAchievements(earned)
+        saveAchievementsServer(earned, walletAddress)
       }
       // Mark daily played (server-side + localStorage)
       if (state.isDaily) {
@@ -112,9 +115,10 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           saveDailyScore(state.score)
         }
       }
-      // Auto-save to game history
-      addGameToHistory(state)
-      setHistoryCount(getGameHistoryCount())
+      // Auto-save to game history (server-synced)
+      addGameToHistoryServer(state, walletAddress).then(() => {
+        setHistoryCount(getGameHistoryCount())
+      })
       // Reset score submission state
       setScoreSubmitted(false)
       setSubmittedRank(null)
@@ -246,8 +250,10 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
 
           <button
             onClick={() => {
-              setHistoryEntries(getGameHistory())
-              setShowHistory(true)
+              fetchGameHistoryServer(walletAddress).then(entries => {
+                setHistoryEntries(entries)
+                setShowHistory(true)
+              })
             }}
             className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press"
           >
