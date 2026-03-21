@@ -13,13 +13,14 @@ interface GameOverProps {
   isSubmitting?: boolean
   scoreSubmitted?: boolean
   submittedRank?: number | null
+  leaderboardType?: 'normal' | 'daily'
   achievements?: string[]
   onShowAchievements?: () => void
 }
 
 export function GameOver({
   state, onPlayAgain, onMintNFT, onSubmitScore, isMinting = false, isSubmitting = false,
-  scoreSubmitted = false, submittedRank = null,
+  scoreSubmitted = false, submittedRank = null, leaderboardType = 'normal',
   achievements = [], onShowAchievements,
 }: GameOverProps) {
   const isVictory = state.phase === 'victory'
@@ -117,7 +118,7 @@ export function GameOver({
               Score submitted! {submittedRank ? `Rank #${submittedRank}` : ''}
             </div>
             <a href="/leaderboard" className="text-[10px] text-sol-green/70 hover:text-sol-green underline">
-              View Leaderboard
+              View {leaderboardType === 'daily' ? 'Daily ' : ''}Leaderboard
             </a>
           </div>
         ) : onSubmitScore ? (

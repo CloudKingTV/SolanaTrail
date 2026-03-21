@@ -13,29 +13,34 @@ interface LeaderboardEntry {
   victory: boolean
   profession?: string
   professionIcon?: string
+  isDaily?: boolean
   timestamp: number
 }
 
 const DATA_DIR = join(process.cwd(), 'data')
-const DATA_FILE = join(DATA_DIR, 'leaderboard.json')
 const MAX_ENTRIES = 50
 
-async function readEntries(): Promise<LeaderboardEntry[]> {
+function dataFile(type: string): string {
+  return join(DATA_DIR, type === 'daily' ? 'leaderboard-daily.json' : 'leaderboard.json')
+}
+
+async function readEntries(type: string): Promise<LeaderboardEntry[]> {
   try {
-    const data = await readFile(DATA_FILE, 'utf-8')
+    const data = await readFile(dataFile(type), 'utf-8')
     return JSON.parse(data)
   } catch {
     return []
   }
 }
 
-async function writeEntries(entries: LeaderboardEntry[]): Promise<void> {
+async function writeEntries(type: string, entries: LeaderboardEntry[]): Promise<void> {
   await mkdir(DATA_DIR, { recursive: true })
-  await writeFile(DATA_FILE, JSON.stringify(entries, null, 2))
+  await writeFile(dataFile(type), JSON.stringify(entries, null, 2))
 }
 
-export async function GET() {
-  const entries = await readEntries()
+export async function GET(req: NextRequest) {
+  const type = req.nextUrl.searchParams.get('type') || 'normal'
+  const entries = await readEntries(type)
   entries.sort((a, b) => b.score - a.score)
   return NextResponse.json(entries.slice(0, MAX_ENTRIES))
 }
@@ -52,6 +57,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid score' }, { status: 400 })
     }
 
+    const isDaily = !!body.isDaily
+    const type = isDaily ? 'daily' : 'normal'
+
     const entry: LeaderboardEntry = {
       playerName: body.playerName.slice(0, 10).toUpperCase(),
       walletAddress: body.walletAddress || 'anonymous',
@@ -63,15 +71,16 @@ export async function POST(req: NextRequest) {
       victory: !!body.victory,
       profession: body.profession,
       professionIcon: body.professionIcon,
+      isDaily,
       timestamp: Date.now(),
     }
 
-    const entries = await readEntries()
+    const entries = await readEntries(type)
     entries.push(entry)
     entries.sort((a, b) => b.score - a.score)
     const top = entries.slice(0, MAX_ENTRIES)
 
-    await writeEntries(top)
+    await writeEntries(type, top)
 
     const rank = top.findIndex(e => e.timestamp === entry.timestamp) + 1
 

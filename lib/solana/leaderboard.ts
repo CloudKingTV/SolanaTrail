@@ -9,17 +9,22 @@ export interface LeaderboardEntry {
   victory: boolean
   profession?: string
   professionIcon?: string
+  isDaily?: boolean
   timestamp: number
 }
 
-const STORAGE_KEY = 'solana-trail-leaderboard'
+export type LeaderboardType = 'normal' | 'daily'
+
+function storageKey(type: LeaderboardType): string {
+  return type === 'daily' ? 'solana-trail-leaderboard-daily' : 'solana-trail-leaderboard'
+}
 
 // Local storage fallback
-export function getLeaderboard(): LeaderboardEntry[] {
+export function getLeaderboard(type: LeaderboardType = 'normal'): LeaderboardEntry[] {
   if (typeof window === 'undefined') return []
 
   try {
-    const data = localStorage.getItem(STORAGE_KEY)
+    const data = localStorage.getItem(storageKey(type))
     if (!data) return []
     const entries: LeaderboardEntry[] = JSON.parse(data)
     return entries.sort((a, b) => b.score - a.score).slice(0, 50)
@@ -29,31 +34,32 @@ export function getLeaderboard(): LeaderboardEntry[] {
 }
 
 export function submitScore(entry: LeaderboardEntry): LeaderboardEntry[] {
-  const entries = getLeaderboard()
+  const type: LeaderboardType = entry.isDaily ? 'daily' : 'normal'
+  const entries = getLeaderboard(type)
   entries.push(entry)
   entries.sort((a, b) => b.score - a.score)
   const top50 = entries.slice(0, 50)
 
   if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(top50))
+    localStorage.setItem(storageKey(type), JSON.stringify(top50))
   }
 
   return top50
 }
 
 // API-based leaderboard functions
-export async function fetchLeaderboardAPI(): Promise<LeaderboardEntry[]> {
+export async function fetchLeaderboardAPI(type: LeaderboardType = 'normal'): Promise<LeaderboardEntry[]> {
   try {
-    const res = await fetch('/api/leaderboard', { cache: 'no-store' })
+    const res = await fetch(`/api/leaderboard?type=${type}`, { cache: 'no-store' })
     if (!res.ok) throw new Error('Failed to fetch')
     const apiEntries: LeaderboardEntry[] = await res.json()
     // Merge with localStorage entries (in case API write failed but localStorage succeeded)
-    const localEntries = getLeaderboard()
+    const localEntries = getLeaderboard(type)
     const merged = mergeEntries(apiEntries, localEntries)
     return merged
   } catch {
     // Fallback to localStorage
-    return getLeaderboard()
+    return getLeaderboard(type)
   }
 }
 
@@ -83,7 +89,8 @@ export async function submitScoreAPI(entry: LeaderboardEntry): Promise<{ rank: n
     return await res.json()
   } catch {
     // API failed but localStorage has it
-    const entries = getLeaderboard()
+    const type: LeaderboardType = entry.isDaily ? 'daily' : 'normal'
+    const entries = getLeaderboard(type)
     const rank = entries.findIndex(e => e.timestamp === entry.timestamp) + 1
     return { rank, entries }
   }

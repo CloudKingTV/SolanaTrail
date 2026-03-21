@@ -336,6 +336,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
                   victory: state.phase === 'victory',
                   profession: state.profession?.name,
                   professionIcon: state.profession?.icon,
+                  isDaily: state.isDaily,
                   timestamp: Date.now(),
                 }
                 const result = await submitScoreAPI(entry)
@@ -365,6 +366,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           isSubmitting={isSubmitting}
           scoreSubmitted={scoreSubmitted}
           submittedRank={submittedRank}
+          leaderboardType={state.isDaily ? 'daily' : 'normal'}
           achievements={allAchievements}
           onShowAchievements={() => setShowAchievements(true)}
         />

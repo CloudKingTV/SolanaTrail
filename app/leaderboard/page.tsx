@@ -1,25 +1,32 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { fetchLeaderboardAPI, LeaderboardEntry } from '@/lib/solana/leaderboard'
+import { fetchLeaderboardAPI, LeaderboardEntry, LeaderboardType } from '@/lib/solana/leaderboard'
 import Link from 'next/link'
 
 export default function LeaderboardPage() {
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([])
+  const [activeTab, setActiveTab] = useState<LeaderboardType>('normal')
+  const [normalEntries, setNormalEntries] = useState<LeaderboardEntry[]>([])
+  const [dailyEntries, setDailyEntries] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
 
   const loadEntries = async () => {
-    const data = await fetchLeaderboardAPI()
-    setEntries(data)
+    const [normal, daily] = await Promise.all([
+      fetchLeaderboardAPI('normal'),
+      fetchLeaderboardAPI('daily'),
+    ])
+    setNormalEntries(normal)
+    setDailyEntries(daily)
     setLoading(false)
   }
 
   useEffect(() => {
     loadEntries()
-    // Auto-refresh every 30 seconds for live feel
     const interval = setInterval(loadEntries, 30000)
     return () => clearInterval(interval)
   }, [])
+
+  const entries = activeTab === 'daily' ? dailyEntries : normalEntries
 
   return (
     <div className="min-h-[100dvh] p-4 space-y-4">
@@ -41,6 +48,30 @@ export default function LeaderboardPage() {
         </Link>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 rounded-lg bg-sol-darker border border-sol-border p-1">
+        <button
+          onClick={() => setActiveTab('normal')}
+          className={`flex-1 py-2 rounded-md text-xs font-pixel transition-all ${
+            activeTab === 'normal'
+              ? 'bg-sol-green/20 text-sol-green border border-sol-green/30'
+              : 'text-sol-muted hover:text-sol-text border border-transparent'
+          }`}
+        >
+          🎮 NORMAL
+        </button>
+        <button
+          onClick={() => setActiveTab('daily')}
+          className={`flex-1 py-2 rounded-md text-xs font-pixel transition-all ${
+            activeTab === 'daily'
+              ? 'bg-sol-blue/20 text-sol-blue border border-sol-blue/30'
+              : 'text-sol-muted hover:text-sol-text border border-transparent'
+          }`}
+        >
+          📅 DAILY
+        </button>
+      </div>
+
       {/* Table */}
       {loading ? (
         <div className="text-center py-20 space-y-4">
@@ -51,7 +82,9 @@ export default function LeaderboardPage() {
         <div className="text-center py-20 space-y-4">
           <div className="text-4xl">🏆</div>
           <p className="text-sm text-sol-muted">
-            No scores yet. Be the first to reach Mainnet!
+            {activeTab === 'daily'
+              ? 'No daily challenge scores yet. Try today\'s challenge!'
+              : 'No scores yet. Be the first to reach Mainnet!'}
           </p>
           <Link
             href="/"
@@ -72,52 +105,55 @@ export default function LeaderboardPage() {
           </div>
 
           {/* Entries */}
-          {entries.map((entry, i) => (
-            <div
-              key={`${entry.playerName}-${entry.timestamp}`}
-              className={`grid grid-cols-[2rem_1fr_3rem_3rem_3rem] gap-1 items-center px-2 py-2 rounded-lg text-xs transition-colors ${
-                i === 0
-                  ? 'bg-sol-green/10 border border-sol-green/30'
-                  : i === 1
-                  ? 'bg-sol-purple/10 border border-sol-purple/20'
-                  : i === 2
-                  ? 'bg-warning/10 border border-warning/20'
-                  : 'hover:bg-sol-card'
-              }`}
-            >
-              <span
-                className={`font-pixel text-[11px] ${
+          {entries.map((entry, i) => {
+            const isDaily = activeTab === 'daily'
+            return (
+              <div
+                key={`${entry.playerName}-${entry.timestamp}`}
+                className={`grid grid-cols-[2rem_1fr_3rem_3rem_3rem] gap-1 items-center px-2 py-2 rounded-lg text-xs transition-colors ${
                   i === 0
-                    ? 'text-sol-green'
+                    ? isDaily
+                      ? 'bg-sol-blue/10 border border-sol-blue/30'
+                      : 'bg-sol-green/10 border border-sol-green/30'
                     : i === 1
-                    ? 'text-sol-purple'
+                    ? 'bg-sol-purple/10 border border-sol-purple/20'
                     : i === 2
-                    ? 'text-warning'
-                    : 'text-sol-muted'
+                    ? 'bg-warning/10 border border-warning/20'
+                    : 'hover:bg-sol-card'
                 }`}
               >
-                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
-              </span>
-              <span className="truncate text-sol-text flex items-center gap-1">
-                {entry.professionIcon && <span className="text-[10px]">{entry.professionIcon}</span>}
-                <span className="font-pixel text-[11px]">{entry.playerName || entry.walletAddress.slice(0, 6)}</span>
-                {entry.victory && <span className="text-[9px]">✅</span>}
-              </span>
-              <span className="text-right font-pixel text-[11px] text-sol-green">
-                {entry.score}
-              </span>
-              <span className="text-right text-[10px] text-sol-muted">{entry.day}</span>
-              <span className="text-right text-[10px] text-sol-muted">{entry.distanceTraveled || '—'}</span>
-            </div>
-          ))}
+                <span
+                  className={`font-pixel text-[11px] ${
+                    i === 0
+                      ? isDaily ? 'text-sol-blue' : 'text-sol-green'
+                      : i === 1
+                      ? 'text-sol-purple'
+                      : i === 2
+                      ? 'text-warning'
+                      : 'text-sol-muted'
+                  }`}
+                >
+                  {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                </span>
+                <span className="truncate text-sol-text flex items-center gap-1">
+                  {entry.professionIcon && <span className="text-[10px]">{entry.professionIcon}</span>}
+                  <span className="font-pixel text-[11px]">{entry.playerName || entry.walletAddress.slice(0, 6)}</span>
+                  {entry.victory && <span className="text-[9px]">✅</span>}
+                </span>
+                <span className={`text-right font-pixel text-[11px] ${isDaily ? 'text-sol-blue' : 'text-sol-green'}`}>
+                  {entry.score}
+                </span>
+                <span className="text-right text-[10px] text-sol-muted">{entry.day}</span>
+                <span className="text-right text-[10px] text-sol-muted">{entry.distanceTraveled || '—'}</span>
+              </div>
+            )
+          })}
         </div>
       )}
 
       <div className="text-center text-[9px] text-sol-muted pt-2">
-        Top {MAX_DISPLAY} scores · Refreshes every 30s
+        Top 50 scores · Refreshes every 30s
       </div>
     </div>
   )
 }
-
-const MAX_DISPLAY = 50
