@@ -78,9 +78,7 @@ export function loadCollectibles(): string[] {
 export function saveCollectibles(ids: string[]) {
   if (typeof window === 'undefined') return
   try {
-    const existing = loadCollectibles()
-    const merged = [...new Set([...existing, ...ids])]
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
   } catch {
     // silent fail
   }

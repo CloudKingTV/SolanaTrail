@@ -144,17 +144,26 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
     }
   }, [state.phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Sync collectibles immediately when found (so they persist even if player quits mid-run)
+  // Sync collectibles immediately when found or sold (so they persist even if player quits mid-run)
+  const prevFoundRef = useRef<string[]>([])
   useEffect(() => {
-    if (state.foundCollectibles.length > 0) {
-      const newlyFound = state.foundCollectibles.filter(id => !allCollectibles.includes(id))
-      if (newlyFound.length > 0) {
-        const updated = [...new Set([...allCollectibles, ...state.foundCollectibles])]
-        setAllCollectibles(updated)
-        saveCollectiblesServer(state.foundCollectibles, walletAddress)
-      }
+    const prev = prevFoundRef.current
+    const curr = state.foundCollectibles
+    prevFoundRef.current = curr
+
+    const added = curr.filter(id => !prev.includes(id))
+    const removed = prev.filter(id => !curr.includes(id))
+
+    if (added.length > 0) {
+      const updated = [...new Set([...allCollectibles, ...added])]
+      setAllCollectibles(updated)
+      saveCollectiblesServer(updated, walletAddress)
+    } else if (removed.length > 0) {
+      const updated = allCollectibles.filter(id => !removed.includes(id))
+      setAllCollectibles(updated)
+      saveCollectiblesServer(updated, walletAddress)
     }
-  }, [state.foundCollectibles.length]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state.foundCollectibles]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track rests and hunts for achievements
   const wrappedDispatch = useCallback((action: Parameters<typeof dispatch>[0]) => {

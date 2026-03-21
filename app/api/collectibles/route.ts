@@ -34,11 +34,9 @@ export async function POST(req: NextRequest) {
     }
 
     const key = getPlayerKey(req, walletAddress)
-    const existing = await redis.get<string[]>(key) || []
-    const merged = [...new Set([...existing, ...ids])]
-    await redis.set(key, merged)
+    await redis.set(key, ids)
 
-    return NextResponse.json({ success: true, collectibles: merged })
+    return NextResponse.json({ success: true, collectibles: ids })
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
