@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { kv } from '@vercel/kv'
+import { Redis } from '@upstash/redis'
+
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+})
 
 interface LeaderboardEntry {
   playerName: string
@@ -24,7 +29,7 @@ function kvKey(type: string): string {
 
 async function readEntries(type: string): Promise<LeaderboardEntry[]> {
   try {
-    const entries = await kv.get<LeaderboardEntry[]>(kvKey(type))
+    const entries = await redis.get<LeaderboardEntry[]>(kvKey(type))
     return entries || []
   } catch {
     return []
@@ -32,7 +37,7 @@ async function readEntries(type: string): Promise<LeaderboardEntry[]> {
 }
 
 async function writeEntries(type: string, entries: LeaderboardEntry[]): Promise<void> {
-  await kv.set(kvKey(type), entries)
+  await redis.set(kvKey(type), entries)
 }
 
 export async function GET(req: NextRequest) {
