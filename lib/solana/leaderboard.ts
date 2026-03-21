@@ -46,14 +46,33 @@ export async function fetchLeaderboardAPI(): Promise<LeaderboardEntry[]> {
   try {
     const res = await fetch('/api/leaderboard', { cache: 'no-store' })
     if (!res.ok) throw new Error('Failed to fetch')
-    return await res.json()
+    const apiEntries: LeaderboardEntry[] = await res.json()
+    // Merge with localStorage entries (in case API write failed but localStorage succeeded)
+    const localEntries = getLeaderboard()
+    const merged = mergeEntries(apiEntries, localEntries)
+    return merged
   } catch {
     // Fallback to localStorage
     return getLeaderboard()
   }
 }
 
+function mergeEntries(a: LeaderboardEntry[], b: LeaderboardEntry[]): LeaderboardEntry[] {
+  const seen = new Set<number>()
+  const merged: LeaderboardEntry[] = []
+  for (const entry of [...a, ...b]) {
+    if (!seen.has(entry.timestamp)) {
+      seen.add(entry.timestamp)
+      merged.push(entry)
+    }
+  }
+  return merged.sort((x, y) => y.score - x.score).slice(0, 50)
+}
+
 export async function submitScoreAPI(entry: LeaderboardEntry): Promise<{ rank: number; entries: LeaderboardEntry[] }> {
+  // Always save to localStorage so leaderboard page can find it
+  submitScore(entry)
+
   try {
     const res = await fetch('/api/leaderboard', {
       method: 'POST',
@@ -63,8 +82,8 @@ export async function submitScoreAPI(entry: LeaderboardEntry): Promise<{ rank: n
     if (!res.ok) throw new Error('Failed to submit')
     return await res.json()
   } catch {
-    // Fallback to localStorage
-    const entries = submitScore(entry)
+    // API failed but localStorage has it
+    const entries = getLeaderboard()
     const rank = entries.findIndex(e => e.timestamp === entry.timestamp) + 1
     return { rank, entries }
   }

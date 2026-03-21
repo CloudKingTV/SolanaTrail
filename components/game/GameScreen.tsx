@@ -109,6 +109,10 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
       // Reset score submission state
       setScoreSubmitted(false)
       setSubmittedRank(null)
+      // Auto-prompt name entry on victory
+      if (state.phase === 'victory') {
+        setShowNameEntry(true)
+      }
     }
   }, [state.phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
