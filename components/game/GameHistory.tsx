@@ -64,6 +64,11 @@ export function GameHistory({ entries, onClose }: GameHistoryProps) {
                       <span className={`font-pixel text-xs ${entry.victory ? 'text-sol-green' : 'text-danger'}`}>
                         {entry.victory ? 'VICTORY' : 'GAME OVER'}
                       </span>
+                      {entry.isTurbo && (
+                        <span className="text-[10px] text-warning bg-warning/10 px-1.5 py-0.5 rounded">
+                          TURBO
+                        </span>
+                      )}
                       {entry.isDaily && (
                         <span className="text-[10px] text-sol-blue bg-sol-blue/10 px-1.5 py-0.5 rounded">
                           DAILY

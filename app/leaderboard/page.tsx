@@ -8,15 +8,18 @@ export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState<LeaderboardType>('normal')
   const [normalEntries, setNormalEntries] = useState<LeaderboardEntry[]>([])
   const [dailyEntries, setDailyEntries] = useState<LeaderboardEntry[]>([])
+  const [turboEntries, setTurboEntries] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
 
   const loadEntries = async () => {
-    const [normal, daily] = await Promise.all([
+    const [normal, daily, turbo] = await Promise.all([
       fetchLeaderboardAPI('normal'),
       fetchLeaderboardAPI('daily'),
+      fetchLeaderboardAPI('turbo'),
     ])
     setNormalEntries(normal)
     setDailyEntries(daily)
+    setTurboEntries(turbo)
     setLoading(false)
   }
 
@@ -26,7 +29,7 @@ export default function LeaderboardPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const entries = activeTab === 'daily' ? dailyEntries : normalEntries
+  const entries = activeTab === 'turbo' ? turboEntries : activeTab === 'daily' ? dailyEntries : normalEntries
 
   return (
     <div className="min-h-[100dvh] p-4 space-y-4">
@@ -61,6 +64,16 @@ export default function LeaderboardPage() {
           🎮 NORMAL
         </button>
         <button
+          onClick={() => setActiveTab('turbo')}
+          className={`flex-1 py-2 rounded-md text-xs font-pixel transition-all ${
+            activeTab === 'turbo'
+              ? 'bg-warning/20 text-warning border border-warning/30'
+              : 'text-sol-muted hover:text-sol-text border border-transparent'
+          }`}
+        >
+          ⚡ TURBO
+        </button>
+        <button
           onClick={() => setActiveTab('daily')}
           className={`flex-1 py-2 rounded-md text-xs font-pixel transition-all ${
             activeTab === 'daily'
@@ -82,7 +95,9 @@ export default function LeaderboardPage() {
         <div className="text-center py-20 space-y-4">
           <div className="text-4xl">🏆</div>
           <p className="text-sm text-sol-muted">
-            {activeTab === 'daily'
+            {activeTab === 'turbo'
+              ? 'No turbo scores yet. Can you speedrun the trail?'
+              : activeTab === 'daily'
               ? 'No daily challenge scores yet. Try today\'s challenge!'
               : 'No scores yet. Be the first to reach Mainnet!'}
           </p>
@@ -106,15 +121,22 @@ export default function LeaderboardPage() {
 
           {/* Entries */}
           {entries.map((entry, i) => {
-            const isDaily = activeTab === 'daily'
+            const firstBg = activeTab === 'turbo'
+              ? 'bg-warning/10 border border-warning/30'
+              : activeTab === 'daily'
+              ? 'bg-sol-blue/10 border border-sol-blue/30'
+              : 'bg-sol-green/10 border border-sol-green/30'
+            const firstText = activeTab === 'turbo'
+              ? 'text-warning'
+              : activeTab === 'daily'
+              ? 'text-sol-blue'
+              : 'text-sol-green'
             return (
               <div
                 key={`${entry.playerName}-${entry.timestamp}`}
                 className={`grid grid-cols-[2rem_1fr_3rem_3rem_3rem] gap-1 items-center px-2 py-2 rounded-lg text-xs transition-colors ${
                   i === 0
-                    ? isDaily
-                      ? 'bg-sol-blue/10 border border-sol-blue/30'
-                      : 'bg-sol-green/10 border border-sol-green/30'
+                    ? firstBg
                     : i === 1
                     ? 'bg-sol-purple/10 border border-sol-purple/20'
                     : i === 2
@@ -125,7 +147,7 @@ export default function LeaderboardPage() {
                 <span
                   className={`font-pixel text-[11px] ${
                     i === 0
-                      ? isDaily ? 'text-sol-blue' : 'text-sol-green'
+                      ? firstText
                       : i === 1
                       ? 'text-sol-purple'
                       : i === 2
@@ -140,7 +162,7 @@ export default function LeaderboardPage() {
                   <span className="font-pixel text-[11px]">{entry.playerName || entry.walletAddress.slice(0, 6)}</span>
                   {entry.victory && <span className="text-[9px]">✅</span>}
                 </span>
-                <span className={`text-right font-pixel text-[11px] ${isDaily ? 'text-sol-blue' : 'text-sol-green'}`}>
+                <span className={`text-right font-pixel text-[11px] ${firstText}`}>
                   {entry.score}
                 </span>
                 <span className="text-right text-[10px] text-sol-muted">{entry.day}</span>

@@ -69,6 +69,7 @@ export function createInitialState(): GameState {
     // Daily challenge
     dailySeed: null,
     isDaily: false,
+    isTurbo: false,
     rngState: 0,
   }
 }
@@ -294,7 +295,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // --- Travel speed (based on pace + phone count) ---
       const baseMiles = PACE_INFO[state.pace].milesPerDay
       const oxenFactor = Math.min(state.inventory.oxen / 6, 1) // 6 phones = max speed
-      const speed = Math.max(3, Math.round(baseMiles * (0.3 + 0.7 * oxenFactor)))
+      const turboMultiplier = state.isTurbo ? 3 : 1
+      const speed = Math.max(3, Math.round(baseMiles * (0.3 + 0.7 * oxenFactor) * turboMultiplier))
       const newDistance = Math.min(state.totalDistance, state.distanceTraveled + speed)
 
       // --- Market conditions ---
@@ -414,7 +416,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       // --- Random events (if still traveling) ---
       if (newPhase === 'traveling') {
-        const eventChance = state.pace === 'grueling' ? 0.5 : state.pace === 'strenuous' ? 0.35 : 0.2
+        const baseEventChance = state.pace === 'grueling' ? 0.5 : state.pace === 'strenuous' ? 0.35 : 0.2
+        const eventChance = state.isTurbo ? baseEventChance * 0.5 : baseEventChance
         if (rng() < eventChance) {
           const event = getRandomEvent(newDay, rng)
           return {
@@ -1009,6 +1012,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           msg(`Today's profession: ${profession.icon} ${profession.name} (${profession.scoreMultiplier}x score)`, 'info', 0),
           msg(`Grab your supplies and hit the trail!`, 'info', 0),
         ],
+      }
+    }
+
+    case 'START_TURBO': {
+      return {
+        ...createInitialState(),
+        phase: 'mode_select',
+        isTurbo: true,
+        totalDistance: 500,
       }
     }
 

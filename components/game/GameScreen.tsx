@@ -242,6 +242,13 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           </button>
 
           <button
+            onClick={() => dispatch({ type: 'START_TURBO' })}
+            className="w-full min-h-[48px] px-6 py-3 rounded-xl border border-warning/50 bg-warning/10 text-warning font-pixel text-xs hover:bg-warning/20 active:bg-warning/30 transition-all btn-press"
+          >
+            ⚡ TURBO MODE
+          </button>
+
+          <button
             onClick={() => setShowAchievements(true)}
             className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press"
           >
@@ -351,6 +358,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
                   profession: state.profession?.name,
                   professionIcon: state.profession?.icon,
                   isDaily: state.isDaily,
+                  isTurbo: state.isTurbo,
                   timestamp: Date.now(),
                 }
                 const result = await submitScoreAPI(entry)
@@ -380,7 +388,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           isSubmitting={isSubmitting}
           scoreSubmitted={scoreSubmitted}
           submittedRank={submittedRank}
-          leaderboardType={state.isDaily ? 'daily' : 'normal'}
+          leaderboardType={state.isTurbo ? 'turbo' : state.isDaily ? 'daily' : 'normal'}
           achievements={allAchievements}
           onShowAchievements={() => setShowAchievements(true)}
         />
@@ -402,6 +410,12 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
       {state.isDaily && (
         <div className="bg-sol-blue/10 border-b border-sol-blue/30 px-4 py-1 text-center">
           <span className="text-[10px] text-sol-blue font-pixel">📅 DAILY CHALLENGE</span>
+        </div>
+      )}
+
+      {state.isTurbo && (
+        <div className="bg-warning/10 border-b border-warning/30 px-4 py-1 text-center">
+          <span className="text-[10px] text-warning font-pixel">⚡ TURBO MODE</span>
         </div>
       )}
 

@@ -13,7 +13,7 @@ interface GameOverProps {
   isSubmitting?: boolean
   scoreSubmitted?: boolean
   submittedRank?: number | null
-  leaderboardType?: 'normal' | 'daily'
+  leaderboardType?: 'normal' | 'daily' | 'turbo'
   achievements?: string[]
   onShowAchievements?: () => void
 }
@@ -118,7 +118,7 @@ export function GameOver({
               Score submitted! {submittedRank ? `Rank #${submittedRank}` : ''}
             </div>
             <a href="/leaderboard" className="text-[10px] text-sol-green/70 hover:text-sol-green underline">
-              View {leaderboardType === 'daily' ? 'Daily ' : ''}Leaderboard
+              View {leaderboardType === 'turbo' ? 'Turbo ' : leaderboardType === 'daily' ? 'Daily ' : ''}Leaderboard
             </a>
           </div>
         ) : onSubmitScore ? (

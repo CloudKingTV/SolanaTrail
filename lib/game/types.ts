@@ -306,6 +306,7 @@ export interface GameState {
   // Save/Load & Daily Challenge
   dailySeed: string | null // null = normal mode, string = daily challenge seed
   isDaily: boolean
+  isTurbo: boolean
   rngState: number // for seeded daily challenges
 }
 
@@ -357,4 +358,5 @@ export type GameAction =
   // Save/Load
   | { type: 'LOAD_GAME'; savedState: GameState }
   | { type: 'START_DAILY' }
+  | { type: 'START_TURBO' }
   | { type: 'PLAY_AGAIN' }

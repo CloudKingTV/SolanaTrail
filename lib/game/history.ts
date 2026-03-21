@@ -18,6 +18,7 @@ export interface GameHistoryEntry {
   partyNames: string[]
   solRemaining: number
   isDaily: boolean
+  isTurbo: boolean
   timestamp: number
 }
 
@@ -57,6 +58,7 @@ export function addGameToHistory(state: GameState): void {
     partyNames: state.party.map(p => p.name),
     solRemaining: Math.round(state.inventory.sol),
     isDaily: state.isDaily,
+    isTurbo: state.isTurbo,
     timestamp: Date.now(),
   }
 
@@ -128,6 +130,7 @@ export async function addGameToHistoryServer(state: GameState, walletAddress?: s
     partyNames: state.party.map(p => p.name),
     solRemaining: Math.round(state.inventory.sol),
     isDaily: state.isDaily,
+    isTurbo: state.isTurbo,
     timestamp: Date.now(),
   }
 

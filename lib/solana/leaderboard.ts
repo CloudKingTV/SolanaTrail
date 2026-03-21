@@ -10,13 +10,22 @@ export interface LeaderboardEntry {
   profession?: string
   professionIcon?: string
   isDaily?: boolean
+  isTurbo?: boolean
   timestamp: number
 }
 
-export type LeaderboardType = 'normal' | 'daily'
+export type LeaderboardType = 'normal' | 'daily' | 'turbo'
+
+function getEntryType(entry: LeaderboardEntry): LeaderboardType {
+  if (entry.isTurbo) return 'turbo'
+  if (entry.isDaily) return 'daily'
+  return 'normal'
+}
 
 function storageKey(type: LeaderboardType): string {
-  return type === 'daily' ? 'solana-trail-leaderboard-daily' : 'solana-trail-leaderboard'
+  if (type === 'daily') return 'solana-trail-leaderboard-daily'
+  if (type === 'turbo') return 'solana-trail-leaderboard-turbo'
+  return 'solana-trail-leaderboard'
 }
 
 // Local storage fallback
@@ -34,7 +43,7 @@ export function getLeaderboard(type: LeaderboardType = 'normal'): LeaderboardEnt
 }
 
 export function submitScore(entry: LeaderboardEntry): LeaderboardEntry[] {
-  const type: LeaderboardType = entry.isDaily ? 'daily' : 'normal'
+  const type = getEntryType(entry)
   const entries = getLeaderboard(type)
   entries.push(entry)
   entries.sort((a, b) => b.score - a.score)
@@ -88,14 +97,14 @@ export async function submitScoreAPI(entry: LeaderboardEntry): Promise<{ rank: n
     if (!res.ok) throw new Error('Failed to submit')
     const result = await res.json()
     // Sync localStorage with server data to avoid duplicates on merge
-    const type: LeaderboardType = entry.isDaily ? 'daily' : 'normal'
+    const type = getEntryType(entry)
     if (typeof window !== 'undefined' && result.entries) {
       localStorage.setItem(storageKey(type), JSON.stringify(result.entries))
     }
     return result
   } catch {
     // API failed but localStorage has it
-    const type: LeaderboardType = entry.isDaily ? 'daily' : 'normal'
+    const type = getEntryType(entry)
     const entries = getLeaderboard(type)
     const rank = entries.findIndex(e => e.timestamp === entry.timestamp) + 1
     return { rank, entries }

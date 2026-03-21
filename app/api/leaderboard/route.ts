@@ -15,13 +15,16 @@ interface LeaderboardEntry {
   profession?: string
   professionIcon?: string
   isDaily?: boolean
+  isTurbo?: boolean
   timestamp: number
 }
 
 const MAX_ENTRIES = 50
 
 function kvKey(type: string): string {
-  return type === 'daily' ? 'leaderboard:daily' : 'leaderboard:normal'
+  if (type === 'daily') return 'leaderboard:daily'
+  if (type === 'turbo') return 'leaderboard:turbo'
+  return 'leaderboard:normal'
 }
 
 async function readEntries(type: string): Promise<LeaderboardEntry[]> {
@@ -57,7 +60,8 @@ export async function POST(req: NextRequest) {
     }
 
     const isDaily = !!body.isDaily
-    const type = isDaily ? 'daily' : 'normal'
+    const isTurbo = !!body.isTurbo
+    const type = isTurbo ? 'turbo' : isDaily ? 'daily' : 'normal'
 
     const entry: LeaderboardEntry = {
       playerName: body.playerName.slice(0, 10).toUpperCase(),
@@ -71,6 +75,7 @@ export async function POST(req: NextRequest) {
       profession: body.profession,
       professionIcon: body.professionIcon,
       isDaily,
+      isTurbo,
       timestamp: body.timestamp || Date.now(),
     }
 
