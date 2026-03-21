@@ -5,6 +5,8 @@ import { gameReducer, createInitialState, calculateScore } from '@/lib/game/engi
 import { Pace, Rations, Inventory, PROFESSIONS } from '@/lib/game/types'
 import { checkAchievements, createInitialStats, saveAchievements, loadAchievements, GameStats } from '@/lib/game/achievements'
 import { saveGame, loadGame, deleteSave, hasSavedGame, getDailySeed, hasDailyBeenPlayed, markDailyPlayed, saveDailyScore } from '@/lib/game/save'
+import { addGameToHistory, getGameHistory, getGameHistoryCount, GameHistoryEntry } from '@/lib/game/history'
+import { submitScoreAPI, LeaderboardEntry } from '@/lib/solana/leaderboard'
 import { StatusBar } from './StatusBar'
 import { MessageLog } from './MessageLog'
 import { TravelView } from './TravelView'
@@ -26,6 +28,8 @@ import { TokenTradingView } from './TokenTradingView'
 import { EncounterDialog } from './EncounterDialog'
 import { AchievementsView } from './AchievementsView'
 import { AchievementToast } from './AchievementToast'
+import { GameHistory } from './GameHistory'
+import { NameEntryModal } from './NameEntryModal'
 
 interface GameScreenProps {
   walletAddress?: string
@@ -39,13 +43,20 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
   const [isMinting, setIsMinting] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showAchievements, setShowAchievements] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+  const [showNameEntry, setShowNameEntry] = useState(false)
+  const [historyEntries, setHistoryEntries] = useState<GameHistoryEntry[]>([])
+  const [historyCount, setHistoryCount] = useState(0)
+  const [scoreSubmitted, setScoreSubmitted] = useState(false)
+  const [submittedRank, setSubmittedRank] = useState<number | null>(null)
   const [newAchievements, setNewAchievements] = useState<string[]>([])
   const [allAchievements, setAllAchievements] = useState<string[]>([])
   const statsRef = useRef<GameStats>(createInitialStats())
 
-  // Load persisted achievements on mount
+  // Load persisted achievements and history count on mount
   useEffect(() => {
     setAllAchievements(loadAchievements())
+    setHistoryCount(getGameHistoryCount())
   }, [])
 
   // Seeker phone detection
@@ -75,7 +86,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
     }
   }, [state.phase])
 
-  // Check achievements on game end
+  // Check achievements and save history on game end
   useEffect(() => {
     if (state.phase === 'victory' || state.phase === 'gameOver') {
       const earned = checkAchievements(state, statsRef.current)
@@ -92,6 +103,12 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           saveDailyScore(state.score)
         }
       }
+      // Auto-save to game history
+      addGameToHistory(state)
+      setHistoryCount(getGameHistoryCount())
+      // Reset score submission state
+      setScoreSubmitted(false)
+      setSubmittedRank(null)
     }
   }, [state.phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -125,6 +142,16 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
     }
     dispatch(action)
   }, [state.currentEncounter, state.tokenHoldings, state.tokenPrices])
+
+  // ==================== GAME HISTORY VIEW ====================
+  if (showHistory) {
+    return (
+      <GameHistory
+        entries={historyEntries}
+        onClose={() => setShowHistory(false)}
+      />
+    )
+  }
 
   // ==================== ACHIEVEMENTS VIEW ====================
   if (showAchievements) {
@@ -204,6 +231,23 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           >
             🏅 Achievements ({allAchievements.length})
           </button>
+
+          <button
+            onClick={() => {
+              setHistoryEntries(getGameHistory())
+              setShowHistory(true)
+            }}
+            className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press"
+          >
+            📜 Game History {historyCount > 0 ? `(${historyCount})` : ''}
+          </button>
+
+          <a
+            href="/leaderboard"
+            className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press flex items-center justify-center"
+          >
+            🏆 Leaderboard
+          </a>
         </div>
 
         {walletAddress && (
@@ -270,6 +314,36 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             onDone={() => setNewAchievements([])}
           />
         )}
+        {showNameEntry && (
+          <NameEntryModal
+            score={state.score}
+            onSubmit={async (name) => {
+              setShowNameEntry(false)
+              setIsSubmitting(true)
+              try {
+                const entry: LeaderboardEntry = {
+                  playerName: name,
+                  walletAddress: walletAddress || 'anonymous',
+                  score: state.score,
+                  day: state.day,
+                  distanceTraveled: state.distanceTraveled,
+                  survived: state.party.filter(p => p.status !== 'dead').length,
+                  totalParty: state.party.length,
+                  victory: state.phase === 'victory',
+                  profession: state.profession?.name,
+                  professionIcon: state.profession?.icon,
+                  timestamp: Date.now(),
+                }
+                const result = await submitScoreAPI(entry)
+                setSubmittedRank(result.rank)
+                setScoreSubmitted(true)
+              } finally {
+                setIsSubmitting(false)
+              }
+            }}
+            onCancel={() => setShowNameEntry(false)}
+          />
+        )}
         <GameOver
           state={state}
           onPlayAgain={() => {
@@ -280,12 +354,13 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             setIsMinting(true)
             try { await onMintNFT?.() } finally { setIsMinting(false) }
           } : undefined}
-          onSubmitScore={walletAddress ? async () => {
-            setIsSubmitting(true)
-            try { await onSubmitScore?.(state.score, walletAddress!) } finally { setIsSubmitting(false) }
+          onSubmitScore={!scoreSubmitted ? () => {
+            setShowNameEntry(true)
           } : undefined}
           isMinting={isMinting}
           isSubmitting={isSubmitting}
+          scoreSubmitted={scoreSubmitted}
+          submittedRank={submittedRank}
           achievements={allAchievements}
           onShowAchievements={() => setShowAchievements(true)}
         />

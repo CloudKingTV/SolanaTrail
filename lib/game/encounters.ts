@@ -281,10 +281,10 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
   },
 ]
 
-export function getRandomEncounter(day: number): Encounter | null {
+export function getRandomEncounter(day: number, rng: () => number = Math.random): Encounter | null {
   // 15% chance of encounter per travel day
-  if (Math.random() > 0.15) return null
+  if (rng() > 0.15) return null
 
-  const encounter = TRAIL_ENCOUNTERS[Math.floor(Math.random() * TRAIL_ENCOUNTERS.length)]
+  const encounter = TRAIL_ENCOUNTERS[Math.floor(rng() * TRAIL_ENCOUNTERS.length)]
   return encounter
 }

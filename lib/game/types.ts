@@ -306,6 +306,7 @@ export interface GameState {
   // Save/Load & Daily Challenge
   dailySeed: string | null // null = normal mode, string = daily challenge seed
   isDaily: boolean
+  rngState: number // for seeded daily challenges
 }
 
 export interface MessageEntry {

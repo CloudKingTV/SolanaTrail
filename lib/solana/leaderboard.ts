@@ -1,15 +1,20 @@
 export interface LeaderboardEntry {
+  playerName: string
   walletAddress: string
   score: number
   day: number
+  distanceTraveled: number
   survived: number
   totalParty: number
   victory: boolean
+  profession?: string
+  professionIcon?: string
   timestamp: number
 }
 
 const STORAGE_KEY = 'solana-trail-leaderboard'
 
+// Local storage fallback
 export function getLeaderboard(): LeaderboardEntry[] {
   if (typeof window === 'undefined') return []
 
@@ -34,4 +39,33 @@ export function submitScore(entry: LeaderboardEntry): LeaderboardEntry[] {
   }
 
   return top50
+}
+
+// API-based leaderboard functions
+export async function fetchLeaderboardAPI(): Promise<LeaderboardEntry[]> {
+  try {
+    const res = await fetch('/api/leaderboard', { cache: 'no-store' })
+    if (!res.ok) throw new Error('Failed to fetch')
+    return await res.json()
+  } catch {
+    // Fallback to localStorage
+    return getLeaderboard()
+  }
+}
+
+export async function submitScoreAPI(entry: LeaderboardEntry): Promise<{ rank: number; entries: LeaderboardEntry[] }> {
+  try {
+    const res = await fetch('/api/leaderboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry),
+    })
+    if (!res.ok) throw new Error('Failed to submit')
+    return await res.json()
+  } catch {
+    // Fallback to localStorage
+    const entries = submitScore(entry)
+    const rank = entries.findIndex(e => e.timestamp === entry.timestamp) + 1
+    return { rank, entries }
+  }
 }

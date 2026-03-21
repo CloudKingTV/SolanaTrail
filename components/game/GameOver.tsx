@@ -11,12 +11,15 @@ interface GameOverProps {
   onSubmitScore?: () => void
   isMinting?: boolean
   isSubmitting?: boolean
+  scoreSubmitted?: boolean
+  submittedRank?: number | null
   achievements?: string[]
   onShowAchievements?: () => void
 }
 
 export function GameOver({
   state, onPlayAgain, onMintNFT, onSubmitScore, isMinting = false, isSubmitting = false,
+  scoreSubmitted = false, submittedRank = null,
   achievements = [], onShowAchievements,
 }: GameOverProps) {
   const isVictory = state.phase === 'victory'
@@ -108,11 +111,20 @@ export function GameOver({
             {isMinting ? 'Minting...' : isBuilders ? '🚀 Mint Project Launch NFT' : '🏆 Mint Explorer Badge NFT'}
           </Button>
         )}
-        {onSubmitScore && (
+        {scoreSubmitted ? (
+          <div className="w-full p-3 rounded-lg bg-sol-green/10 border border-sol-green/30 text-center">
+            <div className="text-xs text-sol-green font-pixel">
+              Score submitted! {submittedRank ? `Rank #${submittedRank}` : ''}
+            </div>
+            <a href="/leaderboard" className="text-[10px] text-sol-green/70 hover:text-sol-green underline">
+              View Leaderboard
+            </a>
+          </div>
+        ) : onSubmitScore ? (
           <Button variant="primary" fullWidth onClick={onSubmitScore} disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : '📊 Submit to Leaderboard'}
           </Button>
-        )}
+        ) : null}
         {onShowAchievements && (
           <Button variant="ghost" fullWidth onClick={onShowAchievements}>
             🏅 Achievements ({achievements.length})

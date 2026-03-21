@@ -7,11 +7,27 @@ import { getRandomEvent } from './events'
 import { getRandomEncounter } from './encounters'
 import { createParty, DEFAULT_NAMES, updatePartyHealth, applyPartyEffect, getAliveCount, getOverallHealth } from './party'
 import { INITIAL_INVENTORY, STORE_ITEMS, getStoreTotalCost } from './store'
-import { generateTokenPrices, tickPrices } from './tokens'
+import { generateTokenPrices, tickPrices, seededRandom, dateSeed } from './tokens'
 
 let messageIdCounter = 0
 function msg(text: string, type: MessageEntry['type'], day: number): MessageEntry {
   return { id: `msg-${++messageIdCounter}`, text, type, day }
+}
+
+// Get a random function - seeded for daily challenges, Math.random for normal
+function getRng(state: GameState): { rng: () => number; nextRngState: number } {
+  if (state.isDaily && state.dailySeed) {
+    const rng = seededRandom(state.rngState)
+    // Advance the state by calling once to get the next seed position
+    let nextState = state.rngState
+    const wrappedRng = () => {
+      const val = rng()
+      nextState = (nextState + 1) | 0
+      return val
+    }
+    return { rng: wrappedRng, nextRngState: nextState }
+  }
+  return { rng: Math.random, nextRngState: state.rngState }
 }
 
 export function createInitialState(): GameState {
@@ -53,6 +69,7 @@ export function createInitialState(): GameState {
     // Daily challenge
     dailySeed: null,
     isDaily: false,
+    rngState: 0,
   }
 }
 
@@ -94,10 +111,10 @@ export function calculateScore(state: GameState): number {
   return Math.round((baseScore + teamBonus) * multiplier)
 }
 
-function getWeather(day: number, epoch: number): 'bull' | 'crab' | 'bear' | 'fomo' | 'winter' {
+function getWeather(day: number, epoch: number, rng: () => number = Math.random): 'bull' | 'crab' | 'bear' | 'fomo' | 'winter' {
   // Epoch 1=early (bear), 3=middle (fomo), 5=late (bear/winter)
   const effectiveDay = day + (epoch - 1) * 20
-  const roll = Math.random()
+  const roll = rng()
 
   if (effectiveDay > 150) { // late = bear market / crypto winter
     if (roll < 0.3) return 'bear'
@@ -263,6 +280,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'ADVANCE_DAY': {
       if (state.phase !== 'traveling') return state
 
+      const { rng } = getRng(state)
+      // Advance rng state for this day
+      const newRngState = state.isDaily ? (state.rngState + state.day * 7 + 1) : state.rngState
+
       const newDay = state.day + 1
 
       // --- Data consumption ---
@@ -277,7 +298,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const newDistance = Math.min(state.totalDistance, state.distanceTraveled + speed)
 
       // --- Market conditions ---
-      const weather = getWeather(newDay, state.startEpoch)
+      const weather = getWeather(newDay, state.startEpoch, rng)
 
       // --- Health update ---
       const newParty = updatePartyHealth(state.party, state.pace, state.rations, state.inventory.clothing, weather)
@@ -355,7 +376,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
         // River crossing
         if (newLocation.type === 'river_crossing') {
-          const depth = Math.round((Math.random() * 5 + 1) * 10) / 10 // 1.0 - 6.0
+          const depth = Math.round((rng() * 5 + 1) * 10) / 10 // 1.0 - 6.0
           return {
             ...state, phase: 'river_crossing', day: newDay, distanceTraveled: newDistance,
             inventory: newInventory, party: newParty, health: newHealth,
@@ -394,25 +415,26 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // --- Random events (if still traveling) ---
       if (newPhase === 'traveling') {
         const eventChance = state.pace === 'grueling' ? 0.5 : state.pace === 'strenuous' ? 0.35 : 0.2
-        if (Math.random() < eventChance) {
-          const event = getRandomEvent(newDay)
+        if (rng() < eventChance) {
+          const event = getRandomEvent(newDay, rng)
           return {
             ...state, phase: 'event', day: newDay, distanceTraveled: newDistance,
             inventory: newInventory, party: newParty, health: newHealth,
             currentLocation: newLocation, nextLocation, currentEvent: event,
             selectedChoice: null, currentWeather: weather, messageLog: messages,
+            rngState: newRngState,
           }
         }
 
         // --- Random NPC encounters (separate from events) ---
-        const encounter = getRandomEncounter(newDay)
+        const encounter = getRandomEncounter(newDay, rng)
         if (encounter) {
           return {
             ...state, phase: 'encounter', day: newDay, distanceTraveled: newDistance,
             inventory: newInventory, party: newParty, health: newHealth,
             currentLocation: newLocation, nextLocation, currentWeather: weather,
             currentEncounter: encounter, selectedEncounterChoice: null,
-            messageLog: messages,
+            messageLog: messages, rngState: newRngState,
           }
         }
       }
@@ -427,7 +449,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state, phase: newPhase, day: newDay, distanceTraveled: newDistance,
         inventory: newInventory, party: newParty, health: newHealth,
         currentLocation: newLocation, nextLocation, currentWeather: weather,
-        messageLog: messages,
+        messageLog: messages, rngState: newRngState,
       }
     }
 
@@ -525,6 +547,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     // ==================== RIVER CROSSING ====================
     case 'RIVER_CHOICE': {
+      const { rng: riverRng } = getRng(state)
       const messages = [...state.messageLog]
       let newInventory = { ...state.inventory }
       let newParty = [...state.party]
@@ -537,22 +560,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           if (depth <= 2.5) {
             messages.push(msg(`Bridged through ${state.currentLocation?.name} with no issues. Clean transaction.`, 'success', state.day))
           } else if (depth <= 4) {
-            if (Math.random() < 0.4) {
-              const lostFood = Math.round(Math.random() * 50 + 20)
+            if (riverRng() < 0.4) {
+              const lostFood = Math.round(riverRng() * 50 + 20)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
               messages.push(msg(`The bridge lagged! Lost ${lostFood} GB of data in failed transactions.`, 'warning', state.day))
             } else {
               messages.push(msg('Bridged across successfully, but it was sketchy for a minute.', 'success', state.day))
             }
           } else {
-            if (Math.random() < 0.3) {
+            if (riverRng() < 0.3) {
               const result = applyPartyEffect(newParty, { type: 'damage', value: 50, target: 'random' })
               newParty = result.party
-              const lostFood = Math.round(Math.random() * 100 + 50)
+              const lostFood = Math.round(riverRng() * 100 + 50)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
               messages.push(msg(`Bridge exploit! ${result.affectedName} got rekt in the transfer! Lost ${lostFood} GB of data.`, 'danger', state.day))
             } else {
-              const lostFood = Math.round(Math.random() * 30 + 10)
+              const lostFood = Math.round(riverRng() * 30 + 10)
               newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
               messages.push(msg(`Rough bridge transfer. Lost some data but everyone made it.`, 'warning', state.day))
             }
@@ -562,8 +585,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
         case 'caulk_and_float': {
           // Wrap tokens — moderate risk
-          if (Math.random() < 0.25) {
-            const lostFood = Math.round(Math.random() * 40 + 10)
+          if (riverRng() < 0.25) {
+            const lostFood = Math.round(riverRng() * 40 + 10)
             newInventory = { ...newInventory, food: Math.max(0, newInventory.food - lostFood) }
             messages.push(msg('Wrapped token transfer failed mid-swap! Some data lost.', 'warning', state.day))
           } else {
@@ -589,7 +612,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           const aliveCount = getAliveCount(newParty)
           const foodPerDay = RATIONS_INFO[state.rations].foodPerPersonPerDay * aliveCount
           newInventory = { ...newInventory, food: Math.max(0, newInventory.food - foodPerDay) }
-          const newDepth = Math.max(1, state.riverDepth - Math.random() * 1.5)
+          const newDepth = Math.max(1, state.riverDepth - riverRng() * 1.5)
           messages.push(msg(`Waited a day for congestion to drop. Network load now ${newDepth.toFixed(1)}/10.`, 'info', newDay))
           return {
             ...state, day: newDay, inventory: newInventory, party: newParty,
@@ -691,7 +714,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       const target = targets[action.targetId] || targets.rabbit
-      const hit = Math.random() < target.chance
+      const { rng: huntRng } = getRng(state)
+      const hit = huntRng() < target.chance
       const newAmmo = state.huntingAmmoUsed + 1
 
       if (hit) {
@@ -949,10 +973,42 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'START_DAILY': {
+      const seed = new Date().toISOString().slice(0, 10)
+      const seedNum = dateSeed(seed)
+      const dailyRng = seededRandom(seedNum)
+
+      // Pick a daily profession based on seed
+      const professionIndex = Math.floor(dailyRng() * PROFESSIONS.length)
+      const profession = PROFESSIONS[professionIndex]
+
+      // Create preset party
+      const dailyParty = createParty(DEFAULT_NAMES, 'explorers')
+
+      // Pick daily start epoch (1-5)
+      const epoch = Math.floor(dailyRng() * 5) + 1
+
+      const currentLocation = getCurrentLocation(0)
+      const nextLocation = getNextLocation(0)
+
       return {
         ...createInitialState(),
+        phase: 'general_store',
+        mode: 'veteran',
+        teamType: 'explorers',
+        profession,
+        party: dailyParty,
+        inventory: { ...INITIAL_INVENTORY, sol: profession.startingSol },
+        startEpoch: epoch,
         isDaily: true,
-        dailySeed: new Date().toISOString().slice(0, 10),
+        dailySeed: seed,
+        rngState: seedNum,
+        currentLocation,
+        nextLocation,
+        messageLog: [
+          msg(`📅 DAILY CHALLENGE — ${seed}`, 'system', 0),
+          msg(`Today's profession: ${profession.icon} ${profession.name} (${profession.scoreMultiplier}x score)`, 'info', 0),
+          msg(`Grab your supplies and hit the trail!`, 'info', 0),
+        ],
       }
     }
 

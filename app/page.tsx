@@ -12,9 +12,11 @@ export default function HomePage() {
   const handleSubmitScore = useCallback(
     async (score: number, wallet: string) => {
       submitScore({
+        playerName: wallet.slice(0, 6),
         walletAddress: wallet,
         score,
         day: 0,
+        distanceTraveled: 0,
         survived: 0,
         totalParty: 5,
         victory: score > 1000,

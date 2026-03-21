@@ -620,11 +620,11 @@ export const GAME_EVENTS: GameEvent[] = [
   },
 ]
 
-export function getRandomEvent(day: number): GameEvent {
+export function getRandomEvent(day: number, rng: () => number = Math.random): GameEvent {
   const eligible = GAME_EVENTS.filter((e) => true) // all events eligible
 
   const totalWeight = eligible.reduce((sum, e) => sum + e.weight, 0)
-  let roll = Math.random() * totalWeight
+  let roll = rng() * totalWeight
 
   for (const event of eligible) {
     roll -= event.weight
