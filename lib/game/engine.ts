@@ -2,7 +2,7 @@ import {
   GameState, GameAction, MessageEntry, Inventory,
   Pace, Rations, PACE_INFO, RATIONS_INFO, PROFESSIONS,
 } from './types'
-import { TOTAL_DISTANCE, getCurrentLocation, getNextLocation, getLocationByDistance } from './locations'
+import { TOTAL_DISTANCE, getCurrentLocation, getNextLocation, getLocationByDistance, getTalkText, getLookAroundText } from './locations'
 import { getRandomEvent } from './events'
 import { getRandomEncounter } from './encounters'
 import { createParty, DEFAULT_NAMES, updatePartyHealth, applyPartyEffect, getAliveCount, getOverallHealth } from './party'
@@ -612,19 +612,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'LOOK_AROUND': {
       const loc = state.currentLocation
       if (!loc) return state
+      const recentTexts = state.messageLog.slice(-10).map(m => m.text)
+      const lookText = getLookAroundText(loc, recentTexts)
       return {
         ...state,
         messageLog: [
           ...state.messageLog,
-          msg(`You look around ${loc.name}. ${loc.description}`, 'info', state.day),
+          msg(lookText, 'info', state.day),
         ],
       }
     }
 
     case 'TALK_TO_PEOPLE': {
       const loc = state.currentLocation
-      if (!loc?.talkTexts?.length) return state
-      const text = loc.talkTexts[Math.floor(Math.random() * loc.talkTexts.length)]
+      if (!loc) return state
+      const recentTexts = state.messageLog.slice(-10).map(m => m.text)
+      const text = getTalkText(loc, recentTexts)
       return {
         ...state,
         messageLog: [...state.messageLog, msg(text, 'info', state.day)],

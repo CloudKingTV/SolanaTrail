@@ -162,7 +162,8 @@ export interface Location {
   hasStore: boolean        // can buy supplies here (forts)
   priceMultiplier: number  // prices go up further along trail
   riverDepth?: number      // for river crossings (randomized at runtime)
-  talkTexts?: string[]     // things NPCs say at this location
+  talkTexts?: string[]           // things NPCs say at this location
+  lookAroundTexts?: string[]     // things you notice when looking around
   // Mode-aware content
   newcomerLearn?: string   // Guide character explains the real protocol
   veteranFlavor?: string   // Extra degen flavor text for veterans
