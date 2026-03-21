@@ -7,13 +7,13 @@ interface MessageLogProps {
   messages: MessageEntry[]
 }
 
-const typeColors: Record<MessageEntry['type'], string> = {
-  info: 'text-sol-text',
-  success: 'text-sol-green',
-  warning: 'text-warning',
-  danger: 'text-danger',
-  system: 'text-sol-purple',
-  guide: 'text-sol-blue',
+const typeConfig: Record<MessageEntry['type'], { color: string; prefix: string }> = {
+  info: { color: 'text-sol-text/90', prefix: '' },
+  success: { color: 'text-sol-green', prefix: '+ ' },
+  warning: { color: 'text-warning', prefix: '! ' },
+  danger: { color: 'text-danger', prefix: '!! ' },
+  system: { color: 'text-sol-purple', prefix: '' },
+  guide: { color: 'text-sol-blue', prefix: '' },
 }
 
 export function MessageLog({ messages }: MessageLogProps) {
@@ -23,16 +23,25 @@ export function MessageLog({ messages }: MessageLogProps) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages.length])
 
-  const recentMessages = messages.slice(-20)
+  const recentMessages = messages.slice(-25)
 
   return (
-    <div className="flex-1 overflow-y-auto p-3 space-y-1 min-h-0">
-      {recentMessages.map((msg) => (
-        <div key={msg.id} className={`text-xs leading-relaxed ${typeColors[msg.type]}`}>
-          <span className="text-sol-muted opacity-50">[{msg.day}] </span>
-          {msg.text}
-        </div>
-      ))}
+    <div className="flex-1 overflow-y-auto p-3 space-y-0.5 min-h-0">
+      {recentMessages.map((msg, i) => {
+        const cfg = typeConfig[msg.type]
+        const isLatest = i === recentMessages.length - 1
+        return (
+          <div
+            key={msg.id}
+            className={`text-xs leading-relaxed py-0.5 ${cfg.color} ${isLatest ? 'animate-fade-in' : ''} ${
+              msg.type === 'guide' ? 'pl-2 border-l-2 border-sol-blue/30' : ''
+            }`}
+          >
+            <span className="text-sol-muted/40 text-[9px] font-mono mr-1">{msg.day}</span>
+            {cfg.prefix}{msg.text}
+          </div>
+        )
+      })}
       <div ref={bottomRef} />
     </div>
   )

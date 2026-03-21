@@ -231,7 +231,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
     const savedGame = hasSavedGame()
 
     return (
-      <div className="flex flex-col items-center justify-center min-h-[100dvh] p-6 text-center space-y-8">
+      <div className="flex flex-col items-center justify-center min-h-[100dvh] p-6 text-center space-y-6 animate-fade-in">
         {/* Achievement toast */}
         {newAchievements.length > 0 && (
           <AchievementToast
@@ -240,26 +240,27 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           />
         )}
 
-        <div className="space-y-4">
-          <div className="text-6xl">◎</div>
+        {/* Logo & tagline */}
+        <div className="space-y-3">
+          <div className="text-6xl animate-bounce-slow">◎</div>
           <h1 className="font-pixel text-xl text-sol-green glow-green leading-relaxed">
             SOLANA<br />TRAIL
           </h1>
-          <p className="text-sm text-sol-muted max-w-xs leading-relaxed">
-            Your party of 5 must navigate the entire Solana
-            ecosystem — 2,000 blocks from Genesis Block to Mainnet Launch.
+          <p className="text-xs text-sol-muted max-w-[280px] leading-relaxed">
+            Lead your party of 5 across 2,000 blocks — from Genesis Block to Mainnet Launch.
           </p>
           {state.seekerDetected && (
-            <div className="text-xs text-sol-green bg-sol-green/10 border border-sol-green/30 rounded-lg px-3 py-2">
-              📱 Seeker Detected! +10 Data bonus at start
+            <div className="text-[10px] text-sol-green bg-sol-green/10 border border-sol-green/30 rounded-lg px-3 py-1.5 animate-fade-in">
+              📱 Seeker Detected! +10 Data bonus
             </div>
           )}
         </div>
 
-        <div className="w-full max-w-xs space-y-3">
+        {/* Primary actions */}
+        <div className="w-full max-w-xs space-y-2.5">
           <button
             onClick={() => dispatch({ type: 'START_TUTORIAL' })}
-            className="w-full min-h-[56px] px-8 py-4 rounded-xl border-2 border-sol-green bg-sol-green/10 text-sol-green font-pixel text-xs hover:bg-sol-green/20 active:bg-sol-green/30 transition-all btn-press"
+            className="w-full min-h-[52px] px-8 py-3.5 rounded-xl border-2 border-sol-green bg-sol-green/10 text-sol-green font-pixel text-xs hover:bg-sol-green/20 active:bg-sol-green/30 transition-all btn-press animate-pulse-subtle"
           >
             NEW GAME
           </button>
@@ -273,69 +274,80 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
                   dispatch({ type: 'LOAD_GAME', savedState: save.state })
                 }
               }}
-              className="w-full min-h-[48px] px-6 py-3 rounded-xl border border-sol-purple/50 bg-sol-purple/10 text-sol-purple font-pixel text-xs hover:bg-sol-purple/20 active:bg-sol-purple/30 transition-all btn-press"
+              className="w-full min-h-[44px] px-6 py-3 rounded-xl border border-sol-purple/50 bg-sol-purple/10 text-sol-purple font-pixel text-[10px] hover:bg-sol-purple/20 active:bg-sol-purple/30 transition-all btn-press"
             >
               CONTINUE SAVED GAME
             </button>
           )}
 
-          <button
-            onClick={() => dispatch({ type: 'START_DAILY' })}
-            disabled={dailyPlayed}
-            className="w-full min-h-[48px] px-6 py-3 rounded-xl border border-sol-blue/50 bg-sol-blue/10 text-sol-blue font-pixel text-xs hover:bg-sol-blue/20 active:bg-sol-blue/30 transition-all btn-press disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            {dailyPlayed ? 'DAILY COMPLETE ✓' : '📅 DAILY CHALLENGE'}
-          </button>
+          {/* Game modes row */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => dispatch({ type: 'START_DAILY' })}
+              disabled={dailyPlayed}
+              className="min-h-[44px] px-3 py-2.5 rounded-xl border border-sol-blue/50 bg-sol-blue/10 text-sol-blue font-pixel text-[10px] hover:bg-sol-blue/20 active:bg-sol-blue/30 transition-all btn-press disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              {dailyPlayed ? '✓ DAILY' : '📅 DAILY'}
+            </button>
+            <button
+              onClick={() => dispatch({ type: 'START_TURBO' })}
+              className="min-h-[44px] px-3 py-2.5 rounded-xl border border-warning/50 bg-warning/10 text-warning font-pixel text-[10px] hover:bg-warning/20 active:bg-warning/30 transition-all btn-press"
+            >
+              ⚡ TURBO
+            </button>
+          </div>
 
-          <button
-            onClick={() => dispatch({ type: 'START_TURBO' })}
-            className="w-full min-h-[48px] px-6 py-3 rounded-xl border border-warning/50 bg-warning/10 text-warning font-pixel text-xs hover:bg-warning/20 active:bg-warning/30 transition-all btn-press"
-          >
-            ⚡ TURBO MODE
-          </button>
+          {/* Divider */}
+          <div className="flex items-center gap-3 py-1">
+            <div className="flex-1 h-px bg-sol-border" />
+            <span className="text-[9px] text-sol-muted uppercase tracking-widest">Profile</span>
+            <div className="flex-1 h-px bg-sol-border" />
+          </div>
 
-          <button
-            onClick={() => setShowAchievements(true)}
-            className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press"
-          >
-            🏅 Achievements ({allAchievements.length})
-          </button>
-
-          <button
-            onClick={() => setShowCollectibles(true)}
-            className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press"
-          >
-            🎒 Items ({allCollectibles.length})
-          </button>
-
-          <button
-            onClick={() => {
-              fetchGameHistoryServer(walletAddress).then(entries => {
-                setHistoryEntries(entries)
-                setShowHistory(true)
-              })
-            }}
-            className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press"
-          >
-            📜 Game History {historyCount > 0 ? `(${historyCount})` : ''}
-          </button>
-
-          <a
-            href="/leaderboard"
-            className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press flex items-center justify-center"
-          >
-            🏆 Leaderboard
-          </a>
+          {/* Profile section — 2x2 grid */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setShowAchievements(true)}
+              className="min-h-[40px] px-3 py-2 rounded-lg border border-sol-border bg-sol-card/50 text-sol-muted text-[10px] hover:bg-sol-card hover:text-sol-text transition-all btn-press flex items-center justify-center gap-1.5"
+            >
+              🏅 <span>{allAchievements.length} Badges</span>
+            </button>
+            <button
+              onClick={() => setShowCollectibles(true)}
+              className="min-h-[40px] px-3 py-2 rounded-lg border border-sol-border bg-sol-card/50 text-sol-muted text-[10px] hover:bg-sol-card hover:text-sol-text transition-all btn-press flex items-center justify-center gap-1.5"
+            >
+              🎒 <span>{allCollectibles.length} Items</span>
+            </button>
+            <button
+              onClick={() => {
+                fetchGameHistoryServer(walletAddress).then(entries => {
+                  setHistoryEntries(entries)
+                  setShowHistory(true)
+                })
+              }}
+              className="min-h-[40px] px-3 py-2 rounded-lg border border-sol-border bg-sol-card/50 text-sol-muted text-[10px] hover:bg-sol-card hover:text-sol-text transition-all btn-press flex items-center justify-center gap-1.5"
+            >
+              📜 <span>History{historyCount > 0 ? ` (${historyCount})` : ''}</span>
+            </button>
+            <a
+              href="/leaderboard"
+              className="min-h-[40px] px-3 py-2 rounded-lg border border-sol-border bg-sol-card/50 text-sol-muted text-[10px] hover:bg-sol-card hover:text-sol-text transition-all btn-press flex items-center justify-center gap-1.5"
+            >
+              🏆 <span>Leaderboard</span>
+            </a>
+          </div>
         </div>
 
-        {walletAddress && (
-          <div className="text-[10px] text-sol-muted">
-            Connected: {walletAddress.slice(0, 4)}...{walletAddress.slice(-4)}
+        {/* Footer */}
+        <div className="space-y-1.5">
+          {walletAddress && (
+            <div className="text-[9px] text-sol-muted/70 font-mono">
+              {walletAddress.slice(0, 4)}...{walletAddress.slice(-4)}
+            </div>
+          )}
+          <div className="text-[9px] text-sol-muted/50">
+            Powered by Solana
           </div>
-        )}
-
-        <div className="text-[10px] text-sol-muted space-y-1">
-          <p>Powered by Solana Devnet</p>
         </div>
       </div>
     )

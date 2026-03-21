@@ -24,59 +24,61 @@ export function TravelView({
   return (
     <div className="flex flex-col">
       {/* Location info */}
-      <div className="px-4 py-3 border-b border-sol-border">
-        {state.currentLocation && (
-          <div className="space-y-1">
-            <h2 className="font-pixel text-[10px] text-sol-green">
-              📍 {state.currentLocation.name}
-            </h2>
+      <div className="px-4 py-2.5 border-b border-sol-border bg-sol-card/30">
+        <div className="flex items-center justify-between">
+          <div>
+            {state.currentLocation && (
+              <h2 className="font-pixel text-[10px] text-sol-green flex items-center gap-1.5">
+                <span className="text-sm">📍</span> {state.currentLocation.name}
+              </h2>
+            )}
           </div>
-        )}
-        {state.nextLocation && (
-          <div className="text-[10px] text-sol-muted">
-            Next: <span className="text-sol-purple">{state.nextLocation.name}</span>{' '}
-            ({nextDist} blocks)
-          </div>
-        )}
-      </div>
-
-      {/* Pace selector */}
-      <div className="px-4 py-2 border-b border-sol-border">
-        <div className="text-[10px] text-sol-muted mb-1">PACE</div>
-        <div className="grid grid-cols-3 gap-1">
-          {(['steady', 'strenuous', 'grueling'] as Pace[]).map((pace) => (
-            <button
-              key={pace}
-              onClick={() => onSetPace(pace)}
-              className={`text-[10px] py-1.5 rounded border transition-all btn-press ${
-                state.pace === pace
-                  ? 'bg-sol-green/20 border-sol-green/50 text-sol-green'
-                  : 'bg-sol-darker border-sol-border text-sol-muted hover:text-sol-text'
-              }`}
-            >
-              {PACE_INFO[pace].icon} {PACE_INFO[pace].label}
-            </button>
-          ))}
+          {state.nextLocation && (
+            <div className="text-[10px] text-sol-muted text-right">
+              <span className="text-sol-purple">{state.nextLocation.name}</span>
+              <span className="text-[9px] block">{nextDist} blocks away</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Rations selector */}
-      <div className="px-4 py-2 border-b border-sol-border">
-        <div className="text-[10px] text-sol-muted mb-1">DATA USAGE</div>
-        <div className="grid grid-cols-3 gap-1">
-          {(['filling', 'meager', 'bare_bones'] as Rations[]).map((ration) => (
-            <button
-              key={ration}
-              onClick={() => onSetRations(ration)}
-              className={`text-[10px] py-1.5 rounded border transition-all btn-press ${
-                state.rations === ration
-                  ? 'bg-sol-purple/20 border-sol-purple/50 text-sol-purple'
-                  : 'bg-sol-darker border-sol-border text-sol-muted hover:text-sol-text'
-              }`}
-            >
-              {RATIONS_INFO[ration].label}
-            </button>
-          ))}
+      {/* Pace & Rations — compact dual-row selector */}
+      <div className="px-3 py-2 border-b border-sol-border space-y-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] text-sol-muted uppercase tracking-wide w-10 shrink-0">Pace</span>
+          <div className="flex-1 grid grid-cols-3 gap-1">
+            {(['steady', 'strenuous', 'grueling'] as Pace[]).map((pace) => (
+              <button
+                key={pace}
+                onClick={() => onSetPace(pace)}
+                className={`text-[10px] py-1 rounded-md border transition-all btn-press ${
+                  state.pace === pace
+                    ? 'bg-sol-green/15 border-sol-green/40 text-sol-green font-semibold'
+                    : 'bg-transparent border-sol-border/50 text-sol-muted hover:text-sol-text hover:border-sol-border'
+                }`}
+              >
+                {PACE_INFO[pace].icon} {PACE_INFO[pace].label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] text-sol-muted uppercase tracking-wide w-10 shrink-0">Data</span>
+          <div className="flex-1 grid grid-cols-3 gap-1">
+            {(['filling', 'meager', 'bare_bones'] as Rations[]).map((ration) => (
+              <button
+                key={ration}
+                onClick={() => onSetRations(ration)}
+                className={`text-[10px] py-1 rounded-md border transition-all btn-press ${
+                  state.rations === ration
+                    ? 'bg-sol-purple/15 border-sol-purple/40 text-sol-purple font-semibold'
+                    : 'bg-transparent border-sol-border/50 text-sol-muted hover:text-sol-text hover:border-sol-border'
+                }`}
+              >
+                {RATIONS_INFO[ration].label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -99,7 +101,7 @@ export function TravelView({
         </div>
 
         <Button variant="ghost" fullWidth onClick={onToggleParty} className="text-[10px]">
-          {showParty ? 'Hide Party' : '👥 Check Party & Supplies'}
+          {showParty ? '← Back to Trail' : '👥 Check Party & Supplies'}
         </Button>
       </div>
     </div>

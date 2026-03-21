@@ -13,49 +13,46 @@ interface HuntingViewProps {
 }
 
 const TARGETS = [
-  { id: 'rabbit', name: 'Shitcoin Flip', icon: '🪙', reward: 5, hitRate: '80%', difficulty: 'Easy' },
-  { id: 'deer', name: 'NFT Snipe', icon: '🖼️', reward: 35, hitRate: '50%', difficulty: 'Medium' },
-  { id: 'bear', name: 'Airdrop Farm', icon: '🌾', reward: 80, hitRate: '25%', difficulty: 'Hard' },
-  { id: 'buffalo', name: 'Gem Find', icon: '💎', reward: 100, hitRate: '15%', difficulty: 'Rare' },
+  { id: 'rabbit', name: 'Shitcoin Flip', icon: '🪙', reward: 5, hitRate: '80%', difficulty: 'Easy', color: 'text-sol-green' },
+  { id: 'deer', name: 'NFT Snipe', icon: '🖼️', reward: 35, hitRate: '50%', difficulty: 'Medium', color: 'text-warning' },
+  { id: 'bear', name: 'Airdrop Farm', icon: '🌾', reward: 80, hitRate: '25%', difficulty: 'Hard', color: 'text-sol-purple' },
+  { id: 'buffalo', name: 'Gem Find', icon: '💎', reward: 100, hitRate: '15%', difficulty: 'Rare', color: 'text-sol-blue' },
 ]
 
 export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, messages }: HuntingViewProps) {
   const maxFood = 100
   const atMax = foodGained >= maxFood
   const outOfAmmo = ammoRemaining <= 0
+  const done = atMax || outOfAmmo
+  const progress = Math.min(100, (foodGained / maxFood) * 100)
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-sol-border text-center space-y-2">
-        <h2 className="font-pixel text-xs text-sol-green glow-green">
-          ALPHA HUNT
-        </h2>
-        <div className="flex justify-center gap-4 text-xs">
-          <div>
-            <span className="text-sol-muted">Alpha: </span>
-            <span className={outOfAmmo ? 'text-danger' : 'text-sol-text'}>
-              {ammoRemaining}
+      <div className="p-3 border-b border-sol-border space-y-2">
+        <div className="flex items-center justify-between">
+          <h2 className="font-pixel text-[10px] text-sol-green glow-green">
+            ALPHA HUNT
+          </h2>
+          <div className="flex items-center gap-3 text-[10px]">
+            <span className={outOfAmmo ? 'text-danger' : 'text-sol-muted'}>
+              🎫 {ammoRemaining}
+            </span>
+            <span className="text-sol-green font-bold">
+              📶 {foodGained}/{maxFood} GB
             </span>
           </div>
-          <div>
-            <span className="text-sol-muted">Data found: </span>
-            <span className={atMax ? 'text-sol-green font-bold' : 'text-sol-green'}>{foodGained}/{maxFood}</span>
-          </div>
         </div>
-        {atMax && (
-          <p className="text-[10px] text-sol-green font-semibold">
-            Max data reached! Finish scouting to collect.
-          </p>
-        )}
-        {outOfAmmo && !atMax && (
-          <p className="text-[10px] text-danger">
-            Out of alpha passes! Finish scouting.
-          </p>
-        )}
-        {!atMax && !outOfAmmo && (
-          <p className="text-[10px] text-sol-muted">
-            Scout for alpha to earn data rewards. Max {maxFood} GB per session.
+        {/* Progress bar */}
+        <div className="w-full h-1.5 bg-sol-darker rounded-full overflow-hidden">
+          <div
+            className="h-full bg-sol-green rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        {done && (
+          <p className={`text-[10px] font-semibold text-center ${atMax ? 'text-sol-green' : 'text-danger'}`}>
+            {atMax ? 'Max data reached! Finish to collect.' : 'Out of alpha passes!'}
           </p>
         )}
       </div>
@@ -66,24 +63,26 @@ export function HuntingView({ ammoRemaining, foodGained, onShoot, onFinish, mess
       </div>
 
       {/* Targets */}
-      <div className="p-3 space-y-2 border-t border-sol-border">
-        <div className="grid grid-cols-2 gap-2">
+      <div className="p-2.5 space-y-2 border-t border-sol-border">
+        <div className="grid grid-cols-2 gap-1.5">
           {TARGETS.map((target) => (
             <button
               key={target.id}
               onClick={() => onShoot(target.id)}
-              disabled={outOfAmmo || atMax}
-              className="p-3 rounded-lg border border-sol-border bg-sol-card hover:bg-sol-darker active:bg-sol-darker disabled:opacity-40 transition-all btn-press text-center"
+              disabled={done}
+              className="p-2 rounded-lg border border-sol-border bg-sol-card hover:bg-sol-darker active:scale-95 disabled:opacity-30 transition-all text-center"
             >
-              <div className="text-2xl">{target.icon}</div>
+              <div className="text-xl">{target.icon}</div>
               <div className="text-[10px] font-semibold text-sol-text">{target.name}</div>
-              <div className="text-[10px] text-sol-muted">+{target.reward} GB · {target.hitRate}</div>
+              <div className="text-[9px] text-sol-muted">
+                +{target.reward} GB <span className={target.color}>({target.hitRate})</span>
+              </div>
             </button>
           ))}
         </div>
 
-        <Button variant="secondary" fullWidth onClick={onFinish}>
-          Done Scouting (gain {foodGained} GB data)
+        <Button variant={done ? 'primary' : 'ghost'} fullWidth onClick={onFinish}>
+          {done ? `Collect ${foodGained} GB Data →` : `Done (${foodGained} GB)`}
         </Button>
       </div>
     </div>
