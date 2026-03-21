@@ -287,23 +287,24 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       const newDay = state.day + 1
 
-      // --- Data consumption ---
+      // --- Data consumption (turbo burns data 2x faster) ---
       const aliveCount = getAliveCount(state.party)
-      const foodPerDay = RATIONS_INFO[state.rations].foodPerPersonPerDay * aliveCount
+      const turboFoodMultiplier = state.isTurbo ? 2 : 1
+      const foodPerDay = RATIONS_INFO[state.rations].foodPerPersonPerDay * aliveCount * turboFoodMultiplier
       const newFood = Math.max(0, state.inventory.food - foodPerDay)
 
       // --- Travel speed (based on pace + phone count) ---
       const baseMiles = PACE_INFO[state.pace].milesPerDay
       const oxenFactor = Math.min(state.inventory.oxen / 6, 1) // 6 phones = max speed
-      const turboMultiplier = state.isTurbo ? 3 : 1
-      const speed = Math.max(3, Math.round(baseMiles * (0.3 + 0.7 * oxenFactor) * turboMultiplier))
+      const speed = Math.max(3, Math.round(baseMiles * (0.3 + 0.7 * oxenFactor)))
       const newDistance = Math.min(state.totalDistance, state.distanceTraveled + speed)
 
       // --- Market conditions ---
       const weather = getWeather(newDay, state.startEpoch, rng)
 
-      // --- Health update ---
-      const newParty = updatePartyHealth(state.party, state.pace, state.rations, state.inventory.clothing, weather)
+      // --- Health update (turbo = harsher conditions) ---
+      const turboPace: Pace = state.isTurbo && state.pace === 'steady' ? 'strenuous' : state.isTurbo && state.pace === 'strenuous' ? 'grueling' : state.pace
+      const newParty = updatePartyHealth(state.party, turboPace, state.rations, state.inventory.clothing, weather)
       const newHealth = getOverallHealth(newParty)
 
       const messages: MessageEntry[] = [...state.messageLog]
@@ -362,20 +363,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           messages.push(msg(newLocation.veteranFlavor, 'info', newDay))
         }
 
-        // Victory!
-        if (newDistance >= state.totalDistance) {
-          const victoryMsg = state.teamType === 'builders'
-            ? 'YOUR PROJECT HAS LAUNCHED ON MAINNET! The Solana ecosystem welcomes your creation!'
-            : 'YOUR CREW MADE IT! You\'ve navigated the entire Solana ecosystem and lived to tell the tale!'
-          const finalState: GameState = {
-            ...state, phase: 'victory', day: newDay, distanceTraveled: newDistance,
-            inventory: newInventory, party: newParty, health: newHealth,
-            currentLocation: newLocation, nextLocation: null, currentWeather: weather,
-            messageLog: [...messages, msg(victoryMsg, 'success', newDay)],
-          }
-          return { ...finalState, score: calculateScore(finalState) }
-        }
-
         // River crossing
         if (newLocation.type === 'river_crossing') {
           const depth = Math.round((rng() * 5 + 1) * 10) / 10 // 1.0 - 6.0
@@ -391,6 +378,20 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         if (newLocation.type === 'fort' || newLocation.type === 'landmark') {
           newPhase = 'landmark'
         }
+      }
+
+      // Victory! (checked outside location block so turbo/shorter trails always trigger)
+      if (newDistance >= state.totalDistance) {
+        const victoryMsg = state.teamType === 'builders'
+          ? 'YOUR PROJECT HAS LAUNCHED ON MAINNET! The Solana ecosystem welcomes your creation!'
+          : 'YOUR CREW MADE IT! You\'ve navigated the entire Solana ecosystem and lived to tell the tale!'
+        const finalState: GameState = {
+          ...state, phase: 'victory', day: newDay, distanceTraveled: newDistance,
+          inventory: newInventory, party: newParty, health: newHealth,
+          currentLocation: newLocation, nextLocation: null, currentWeather: weather,
+          messageLog: [...messages, msg(victoryMsg, 'success', newDay)],
+        }
+        return { ...finalState, score: calculateScore(finalState) }
       }
 
       // Game over checks
@@ -417,7 +418,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // --- Random events (if still traveling) ---
       if (newPhase === 'traveling') {
         const baseEventChance = state.pace === 'grueling' ? 0.5 : state.pace === 'strenuous' ? 0.35 : 0.2
-        const eventChance = state.isTurbo ? baseEventChance * 0.5 : baseEventChance
+        const eventChance = state.isTurbo ? Math.min(baseEventChance * 1.5, 0.65) : baseEventChance
         if (rng() < eventChance) {
           const event = getRandomEvent(newDay, rng)
           return {
