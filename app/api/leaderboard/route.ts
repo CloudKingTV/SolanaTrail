@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       profession: body.profession,
       professionIcon: body.professionIcon,
       isDaily,
-      timestamp: Date.now(),
+      timestamp: body.timestamp || Date.now(),
     }
 
     const entries = await readEntries(type)

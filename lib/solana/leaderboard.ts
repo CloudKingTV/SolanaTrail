@@ -86,7 +86,13 @@ export async function submitScoreAPI(entry: LeaderboardEntry): Promise<{ rank: n
       body: JSON.stringify(entry),
     })
     if (!res.ok) throw new Error('Failed to submit')
-    return await res.json()
+    const result = await res.json()
+    // Sync localStorage with server data to avoid duplicates on merge
+    const type: LeaderboardType = entry.isDaily ? 'daily' : 'normal'
+    if (typeof window !== 'undefined' && result.entries) {
+      localStorage.setItem(storageKey(type), JSON.stringify(result.entries))
+    }
+    return result
   } catch {
     // API failed but localStorage has it
     const type: LeaderboardType = entry.isDaily ? 'daily' : 'normal'
