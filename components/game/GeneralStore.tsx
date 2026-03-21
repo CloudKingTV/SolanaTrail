@@ -28,18 +28,44 @@ export function GeneralStore({ inventory, onBuy, onLeave }: GeneralStoreProps) {
         </div>
       </div>
 
-      {/* Advice toggle */}
-      <button
-        onClick={() => setShowAdvice(!showAdvice)}
-        className="mx-4 mt-3 text-[10px] text-sol-purple hover:text-sol-green transition-colors text-left"
-      >
-        {showAdvice ? '▼ Hide Matt\'s advice' : '▶ Ask Matt for advice'}
-      </button>
-      {showAdvice && (
-        <div className="mx-4 mt-2 p-3 rounded-lg bg-sol-darker border border-sol-border space-y-1">
-          {getMattsAdvice().map((tip, i) => (
-            <p key={i} className="text-[10px] text-sol-muted italic leading-relaxed">{tip}</p>
-          ))}
+      {/* Matt's advice — prominent animated banner */}
+      {!showAdvice ? (
+        <button
+          onClick={() => setShowAdvice(true)}
+          className="mx-4 mt-3 p-3 rounded-lg border-2 border-sol-purple/50 bg-sol-purple/10 hover:bg-sol-purple/20 transition-all animate-pulse-subtle group"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl animate-bounce-slow">🧑‍💼</span>
+            <div className="text-left flex-1">
+              <div className="text-xs font-bold text-sol-purple">
+                Not sure what to buy?
+              </div>
+              <div className="text-[10px] text-sol-muted group-hover:text-sol-text transition-colors">
+                Tap here for Matt&apos;s recommendations →
+              </div>
+            </div>
+            <span className="text-sol-purple animate-ping-slow text-lg">💡</span>
+          </div>
+        </button>
+      ) : (
+        <div className="mx-4 mt-3 p-3 rounded-lg border-2 border-sol-purple/30 bg-sol-purple/5 animate-fade-in">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">🧑‍💼</span>
+            <span className="text-xs font-bold text-sol-purple">Matt says:</span>
+            <button
+              onClick={() => setShowAdvice(false)}
+              className="ml-auto text-[10px] text-sol-muted hover:text-sol-text"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="space-y-2">
+            {getMattsAdvice().map((tip, i) => (
+              <p key={i} className="text-[11px] text-sol-text leading-relaxed pl-2 border-l-2 border-sol-purple/30">
+                {tip}
+              </p>
+            ))}
+          </div>
         </div>
       )}
 
