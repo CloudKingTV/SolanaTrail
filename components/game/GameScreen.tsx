@@ -4,7 +4,7 @@ import { useReducer, useState, useEffect, useCallback, useRef } from 'react'
 import { gameReducer, createInitialState, calculateScore } from '@/lib/game/engine'
 import { Pace, Rations, Inventory, PROFESSIONS } from '@/lib/game/types'
 import { checkAchievements, createInitialStats, saveAchievements, loadAchievements, GameStats } from '@/lib/game/achievements'
-import { saveGame, loadGame, deleteSave, hasSavedGame, getDailySeed, hasDailyBeenPlayed, markDailyPlayed, saveDailyScore } from '@/lib/game/save'
+import { saveGame, loadGame, deleteSave, hasSavedGame, getDailySeed, hasDailyBeenPlayed, hasDailyBeenPlayedServer, markDailyPlayedServer, saveDailyScore } from '@/lib/game/save'
 import { addGameToHistory, getGameHistory, getGameHistoryCount, GameHistoryEntry } from '@/lib/game/history'
 import { submitScoreAPI, LeaderboardEntry } from '@/lib/solana/leaderboard'
 import { StatusBar } from './StatusBar'
@@ -48,6 +48,7 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
   const [historyEntries, setHistoryEntries] = useState<GameHistoryEntry[]>([])
   const [historyCount, setHistoryCount] = useState(0)
   const [scoreSubmitted, setScoreSubmitted] = useState(false)
+  const [dailyPlayed, setDailyPlayed] = useState(hasDailyBeenPlayed())
   const [submittedRank, setSubmittedRank] = useState<number | null>(null)
   const [newAchievements, setNewAchievements] = useState<string[]>([])
   const [allAchievements, setAllAchievements] = useState<string[]>([])
@@ -58,6 +59,13 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
     setAllAchievements(loadAchievements())
     setHistoryCount(getGameHistoryCount())
   }, [])
+
+  // Check server-side daily challenge status on mount
+  useEffect(() => {
+    hasDailyBeenPlayedServer(walletAddress).then(played => {
+      setDailyPlayed(played)
+    })
+  }, [walletAddress])
 
   // Seeker phone detection
   useEffect(() => {
@@ -96,9 +104,10 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
         setAllAchievements(updated)
         saveAchievements(earned)
       }
-      // Mark daily played
+      // Mark daily played (server-side + localStorage)
       if (state.isDaily) {
-        markDailyPlayed()
+        markDailyPlayedServer(walletAddress)
+        setDailyPlayed(true)
         if (state.phase === 'victory') {
           saveDailyScore(state.score)
         }
@@ -170,7 +179,6 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
   // ==================== TITLE SCREEN ====================
   if (state.phase === 'title') {
     const savedGame = hasSavedGame()
-    const dailyPlayed = hasDailyBeenPlayed()
 
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] p-6 text-center space-y-8">

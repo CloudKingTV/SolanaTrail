@@ -87,9 +87,40 @@ export function hasDailyBeenPlayed(): boolean {
   return localStorage.getItem(DAILY_KEY) === today
 }
 
+export async function hasDailyBeenPlayedServer(walletAddress?: string): Promise<boolean> {
+  // Check localStorage first as a fast cache
+  if (hasDailyBeenPlayed()) return true
+  try {
+    const params = walletAddress ? `?wallet=${walletAddress}` : ''
+    const res = await fetch(`/api/daily${params}`, { cache: 'no-store' })
+    if (!res.ok) return hasDailyBeenPlayed()
+    const data = await res.json()
+    // Sync localStorage if server says played
+    if (data.played) {
+      localStorage.setItem(DAILY_KEY, getDailySeed())
+    }
+    return data.played
+  } catch {
+    return hasDailyBeenPlayed()
+  }
+}
+
 export function markDailyPlayed() {
   if (typeof window === 'undefined') return
   localStorage.setItem(DAILY_KEY, getDailySeed())
+}
+
+export async function markDailyPlayedServer(walletAddress?: string) {
+  markDailyPlayed()
+  try {
+    await fetch('/api/daily', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ walletAddress: walletAddress || 'anonymous' }),
+    })
+  } catch {
+    // localStorage already marked, server will catch next time
+  }
 }
 
 export function getDailyScore(): number | null {
