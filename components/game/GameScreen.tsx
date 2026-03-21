@@ -112,15 +112,14 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
         setAllAchievements(updated)
         saveAchievementsServer(earned, walletAddress)
       }
-      // Sync collectibles found this run
+      // Sync special collectibles (awarded at game end only)
       const specialItems = checkSpecialCollectibles(state)
-      const runItems = [...state.foundCollectibles, ...specialItems]
-      if (runItems.length > 0) {
-        const newlyFound = runItems.filter(id => !allCollectibles.includes(id))
+      if (specialItems.length > 0) {
+        const newlyFound = specialItems.filter(id => !allCollectibles.includes(id))
         if (newlyFound.length > 0) {
-          const updated = [...new Set([...allCollectibles, ...runItems])]
+          const updated = [...new Set([...allCollectibles, ...specialItems])]
           setAllCollectibles(updated)
-          saveCollectiblesServer(runItems, walletAddress)
+          saveCollectiblesServer(specialItems, walletAddress)
         }
       }
       // Mark daily played (server-side + localStorage)
@@ -144,6 +143,18 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
       }
     }
   }, [state.phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync collectibles immediately when found (so they persist even if player quits mid-run)
+  useEffect(() => {
+    if (state.foundCollectibles.length > 0) {
+      const newlyFound = state.foundCollectibles.filter(id => !allCollectibles.includes(id))
+      if (newlyFound.length > 0) {
+        const updated = [...new Set([...allCollectibles, ...state.foundCollectibles])]
+        setAllCollectibles(updated)
+        saveCollectiblesServer(state.foundCollectibles, walletAddress)
+      }
+    }
+  }, [state.foundCollectibles.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track rests and hunts for achievements
   const wrappedDispatch = useCallback((action: Parameters<typeof dispatch>[0]) => {
@@ -477,11 +488,13 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
           <LandmarkView
             location={state.currentLocation}
             inventory={state.inventory}
+            foundCollectibles={state.foundCollectibles}
             onContinue={() => wrappedDispatch({ type: 'CONTINUE_FROM_LANDMARK' })}
             onLookAround={() => wrappedDispatch({ type: 'LOOK_AROUND' })}
             onTalk={() => wrappedDispatch({ type: 'TALK_TO_PEOPLE' })}
             onTrade={() => wrappedDispatch({ type: 'ENTER_TRADING' })}
             onRest={() => wrappedDispatch({ type: 'REST' })}
+            onSellCollectible={(id) => wrappedDispatch({ type: 'SELL_COLLECTIBLE', collectibleId: id })}
             onTokenTrade={state.currentLocation.hasStore ? () => wrappedDispatch({ type: 'ENTER_TOKEN_TRADING' }) : undefined}
             messages={state.messageLog.filter(m => m.day >= state.day)}
           />

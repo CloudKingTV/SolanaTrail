@@ -266,6 +266,7 @@ export interface Collectible {
   description: string
   rarity: CollectibleRarity
   source: string  // hint text for how to find it
+  sellValue: number  // SOL earned when selling at an outpost
 }
 
 // --- ACHIEVEMENTS ---
@@ -374,4 +375,5 @@ export type GameAction =
   | { type: 'LOAD_GAME'; savedState: GameState }
   | { type: 'START_DAILY' }
   | { type: 'START_TURBO' }
+  | { type: 'SELL_COLLECTIBLE'; collectibleId: string }
   | { type: 'PLAY_AGAIN' }

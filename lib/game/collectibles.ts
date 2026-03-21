@@ -2,33 +2,33 @@ import { Collectible, CollectibleRarity, GameState } from './types'
 import { getAliveCount } from './party'
 
 export const COLLECTIBLES: Collectible[] = [
-  // === COMMON ===
-  { id: 'whale_receipt', name: "Whale's Staking Receipt", icon: '🧾', rarity: 'common', description: 'A receipt from when a whale staked SOL on your behalf. Smells like money.', source: 'Accept a Wandering Whale\'s offer' },
-  { id: 'vc_card', name: 'VC Business Card', icon: '💼', rarity: 'common', description: 'A sleek card with "Web3 Fund" embossed in gold. The back says "We invest in vibes."', source: 'Accept funding from a VC Recruiter' },
-  { id: 'airdrop_split', name: 'Airdrop Split Token', icon: '🎯', rarity: 'common', description: 'Your share of a split airdrop. It\'s not much, but it\'s honest work.', source: 'Split an airdrop with a fellow hunter' },
-  { id: 'yield_receipt', name: 'Yield Farm Receipt', icon: '🌾', rarity: 'common', description: 'Proof you aped into a yield farm and somehow didn\'t get rugged.', source: 'Ape into a yield farm' },
-  { id: 'hackathon_badge', name: 'Hackathon Badge', icon: '🤝', rarity: 'common', description: 'A lanyard badge from a degen meetup. Still has pizza grease on it.', source: 'Join a hackathon/degen meetup' },
+  // === COMMON (sellValue: 2 SOL) ===
+  { id: 'whale_receipt', name: "Whale's Staking Receipt", icon: '🧾', rarity: 'common', sellValue: 2, description: 'A receipt from when a whale staked SOL on your behalf. Smells like money.', source: 'Accept a Wandering Whale\'s offer' },
+  { id: 'vc_card', name: 'VC Business Card', icon: '💼', rarity: 'common', sellValue: 2, description: 'A sleek card with "Web3 Fund" embossed in gold. The back says "We invest in vibes."', source: 'Accept funding from a VC Recruiter' },
+  { id: 'airdrop_split', name: 'Airdrop Split Token', icon: '🎯', rarity: 'common', sellValue: 2, description: 'Your share of a split airdrop. It\'s not much, but it\'s honest work.', source: 'Split an airdrop with a fellow hunter' },
+  { id: 'yield_receipt', name: 'Yield Farm Receipt', icon: '🌾', rarity: 'common', sellValue: 2, description: 'Proof you aped into a yield farm and somehow didn\'t get rugged.', source: 'Ape into a yield farm' },
+  { id: 'hackathon_badge', name: 'Hackathon Badge', icon: '🤝', rarity: 'common', sellValue: 2, description: 'A lanyard badge from a degen meetup. Still has pizza grease on it.', source: 'Join a hackathon/degen meetup' },
 
-  // === UNCOMMON ===
-  { id: 'gratitude_note', name: 'Gratitude Note', icon: '📝', rarity: 'uncommon', description: 'A heartfelt note from a degen you helped. "Thanks ser, WAGMI."', source: 'Help a Lost Degen find their way' },
-  { id: 'degen_hoodie', name: "Degen's Lucky Hoodie", icon: '👕', rarity: 'uncommon', description: 'A worn hoodie found at an abandoned setup. Has "WAGMI" stitched inside the collar.', source: 'Search an abandoned degen setup' },
-  { id: 'salvaged_cpu', name: 'Salvaged Bot CPU', icon: '🔧', rarity: 'uncommon', description: 'A processor chip from a broken trading bot. Still warm.', source: 'Fix a Broken Bot on the trail' },
-  { id: 'fud_trophy', name: 'FUD Slayer Trophy', icon: '🏆', rarity: 'uncommon', description: 'A tiny trophy for winning an argument against FUD. It says "I was right" on the base.', source: 'Argue with a FUD Spreader and win' },
-  { id: 'staking_gem', name: 'Epoch Staking Gem', icon: '💎', rarity: 'uncommon', description: 'A crystallized epoch reward. Glows faintly when near a validator.', source: 'Collect staking rewards' },
+  // === UNCOMMON (sellValue: 5 SOL) ===
+  { id: 'gratitude_note', name: 'Gratitude Note', icon: '📝', rarity: 'uncommon', sellValue: 5, description: 'A heartfelt note from a degen you helped. "Thanks ser, WAGMI."', source: 'Help a Lost Degen find their way' },
+  { id: 'degen_hoodie', name: "Degen's Lucky Hoodie", icon: '👕', rarity: 'uncommon', sellValue: 5, description: 'A worn hoodie found at an abandoned setup. Has "WAGMI" stitched inside the collar.', source: 'Search an abandoned degen setup' },
+  { id: 'salvaged_cpu', name: 'Salvaged Bot CPU', icon: '🔧', rarity: 'uncommon', sellValue: 5, description: 'A processor chip from a broken trading bot. Still warm.', source: 'Fix a Broken Bot on the trail' },
+  { id: 'fud_trophy', name: 'FUD Slayer Trophy', icon: '🏆', rarity: 'uncommon', sellValue: 5, description: 'A tiny trophy for winning an argument against FUD. It says "I was right" on the base.', source: 'Argue with a FUD Spreader and win' },
+  { id: 'staking_gem', name: 'Epoch Staking Gem', icon: '💎', rarity: 'uncommon', sellValue: 5, description: 'A crystallized epoch reward. Glows faintly when near a validator.', source: 'Collect staking rewards' },
 
-  // === RARE ===
-  { id: 'pixelated_nft', name: 'Pixelated NFT', icon: '🖼️', rarity: 'rare', description: 'A lovingly crafted pixel art NFT. The artist was so grateful you bought one.', source: 'Buy an NFT from a struggling artist' },
-  { id: 'golden_airdrop', name: 'Golden Airdrop Token', icon: '✨', rarity: 'rare', description: 'A shimmering token from a surprise airdrop. Might be worth something someday.', source: 'Claim an airdrop' },
-  { id: 'alpha_intel', name: 'Classified Alpha Intel', icon: '📋', rarity: 'rare', description: 'A sealed envelope of alpha. The contents are... actually pretty good.', source: 'Buy alpha from a Shady Dealer' },
-  { id: 'race_trophy', name: 'Degen Race Trophy', icon: '🏁', rarity: 'rare', description: 'First place in an impromptu race against a rival party. They want a rematch.', source: 'Win a race against a Rival Party' },
+  // === RARE (sellValue: 15 SOL) ===
+  { id: 'pixelated_nft', name: 'Pixelated NFT', icon: '🖼️', rarity: 'rare', sellValue: 15, description: 'A lovingly crafted pixel art NFT. The artist was so grateful you bought one.', source: 'Buy an NFT from a struggling artist' },
+  { id: 'golden_airdrop', name: 'Golden Airdrop Token', icon: '✨', rarity: 'rare', sellValue: 15, description: 'A shimmering token from a surprise airdrop. Might be worth something someday.', source: 'Claim an airdrop' },
+  { id: 'alpha_intel', name: 'Classified Alpha Intel', icon: '📋', rarity: 'rare', sellValue: 15, description: 'A sealed envelope of alpha. The contents are... actually pretty good.', source: 'Buy alpha from a Shady Dealer' },
+  { id: 'race_trophy', name: 'Degen Race Trophy', icon: '🏁', rarity: 'rare', sellValue: 15, description: 'First place in an impromptu race against a rival party. They want a rematch.', source: 'Win a race against a Rival Party' },
 
-  // === EPIC ===
-  { id: 'og_mint_pass', name: 'OG Mint Pass', icon: '🎫', rarity: 'epic', description: 'A mint pass from a gas war you survived. Battle-scarred but legendary.', source: 'Win a Mint War gas battle' },
-  { id: 'genesis_coin', name: 'Genesis Block Coin', icon: '🪙', rarity: 'epic', description: 'A commemorative coin from the Genesis Block. Only true degens earn this.', source: 'Win the game as a Memecoin Degen' },
+  // === EPIC (sellValue: 40 SOL) ===
+  { id: 'og_mint_pass', name: 'OG Mint Pass', icon: '🎫', rarity: 'epic', sellValue: 40, description: 'A mint pass from a gas war you survived. Battle-scarred but legendary.', source: 'Win a Mint War gas battle' },
+  { id: 'genesis_coin', name: 'Genesis Block Coin', icon: '🪙', rarity: 'epic', sellValue: 40, description: 'A commemorative coin from the Genesis Block. Only true degens earn this.', source: 'Win the game as a Memecoin Degen' },
 
-  // === LEGENDARY ===
-  { id: 'signed_hw_wallet', name: 'Signed Hardware Wallet', icon: '🔐', rarity: 'legendary', description: 'A hardware wallet signed by a Solana OG. The seed phrase is "trust the process."', source: 'Listen to a Solana OG\'s wisdom' },
-  { id: 'diamond_ring', name: 'Diamond Hands Ring', icon: '💍', rarity: 'legendary', description: 'A ring forged from pure diamond hands energy. Your entire crew survived the trail.', source: 'Reach Mainnet with all 5 party members alive' },
+  // === LEGENDARY (sellValue: 100 SOL) ===
+  { id: 'signed_hw_wallet', name: 'Signed Hardware Wallet', icon: '🔐', rarity: 'legendary', sellValue: 100, description: 'A hardware wallet signed by a Solana OG. The seed phrase is "trust the process."', source: 'Listen to a Solana OG\'s wisdom' },
+  { id: 'diamond_ring', name: 'Diamond Hands Ring', icon: '💍', rarity: 'legendary', sellValue: 100, description: 'A ring forged from pure diamond hands energy. Your entire crew survived the trail.', source: 'Reach Mainnet with all 5 party members alive' },
 ]
 
 // Rarity display config

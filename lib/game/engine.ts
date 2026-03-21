@@ -995,6 +995,25 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
     }
 
+    // ==================== SELL COLLECTIBLES ====================
+    case 'SELL_COLLECTIBLE': {
+      if (state.phase !== 'landmark' || !state.currentLocation?.hasStore) return state
+      if (!state.foundCollectibles.includes(action.collectibleId)) return state
+
+      const collectibleToSell = COLLECTIBLES.find(c => c.id === action.collectibleId)
+      if (!collectibleToSell) return state
+
+      const sellMessages = [...state.messageLog]
+      sellMessages.push(msg(`Sold ${collectibleToSell.icon} ${collectibleToSell.name} for ${collectibleToSell.sellValue} SOL`, 'success', state.day))
+
+      return {
+        ...state,
+        inventory: { ...state.inventory, sol: state.inventory.sol + collectibleToSell.sellValue },
+        foundCollectibles: state.foundCollectibles.filter(id => id !== action.collectibleId),
+        messageLog: sellMessages,
+      }
+    }
+
     // ==================== SAVE/LOAD ====================
     case 'LOAD_GAME': {
       return { ...action.savedState, foundCollectibles: action.savedState.foundCollectibles || [] }
