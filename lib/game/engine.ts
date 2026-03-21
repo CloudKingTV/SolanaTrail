@@ -8,6 +8,7 @@ import { getRandomEncounter } from './encounters'
 import { createParty, DEFAULT_NAMES, updatePartyHealth, applyPartyEffect, getAliveCount, getOverallHealth } from './party'
 import { INITIAL_INVENTORY, STORE_ITEMS, getStoreTotalCost } from './store'
 import { generateTokenPrices, tickPrices, seededRandom, dateSeed } from './tokens'
+import { COLLECTIBLES } from './collectibles'
 
 let messageIdCounter = 0
 function msg(text: string, type: MessageEntry['type'], day: number): MessageEntry {
@@ -64,8 +65,9 @@ export function createInitialState(): GameState {
     // Encounters
     currentEncounter: null,
     selectedEncounterChoice: null,
-    // Achievements
+    // Achievements & Collectibles
     unlockedAchievements: [],
+    foundCollectibles: [],
     // Daily challenge
     dailySeed: null,
     isDaily: false,
@@ -526,6 +528,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       messages.push(msg(choice.outcome.description, 'info', state.day))
 
+      // Collectible drop
+      let newFoundCollectibles = state.foundCollectibles
+      if (choice.outcome.collectibleDrop && !newFoundCollectibles.includes(choice.outcome.collectibleDrop)) {
+        const collectible = COLLECTIBLES.find(c => c.id === choice.outcome.collectibleDrop)
+        if (collectible) {
+          newFoundCollectibles = [...newFoundCollectibles, choice.outcome.collectibleDrop]
+          messages.push(msg(`🎁 Collectible found: ${collectible.icon} ${collectible.name}!`, 'success', state.day))
+        }
+      }
+
       return {
         ...state,
         inventory: newInventory,
@@ -533,6 +545,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         day: newDay,
         health: getOverallHealth(newParty),
         selectedChoice: choice,
+        foundCollectibles: newFoundCollectibles,
         messageLog: messages,
       }
     }
@@ -951,6 +964,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       messages.push(msg(choice.outcome.description, 'info', state.day))
 
+      // Collectible drop
+      let ecNewFoundCollectibles = state.foundCollectibles
+      if (choice.outcome.collectibleDrop && !ecNewFoundCollectibles.includes(choice.outcome.collectibleDrop)) {
+        const collectible = COLLECTIBLES.find(c => c.id === choice.outcome.collectibleDrop)
+        if (collectible) {
+          ecNewFoundCollectibles = [...ecNewFoundCollectibles, choice.outcome.collectibleDrop]
+          messages.push(msg(`🎁 Collectible found: ${collectible.icon} ${collectible.name}!`, 'success', state.day))
+        }
+      }
+
       return {
         ...state,
         inventory: newInventory,
@@ -958,6 +981,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         day: newDay,
         health: getOverallHealth(newParty),
         selectedEncounterChoice: choice,
+        foundCollectibles: ecNewFoundCollectibles,
         messageLog: messages,
       }
     }
@@ -973,7 +997,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     // ==================== SAVE/LOAD ====================
     case 'LOAD_GAME': {
-      return { ...action.savedState }
+      return { ...action.savedState, foundCollectibles: action.savedState.foundCollectibles || [] }
     }
 
     case 'START_DAILY': {

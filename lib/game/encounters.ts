@@ -18,6 +18,7 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
         outcome: {
           description: 'The whale stakes your SOL. A few hours later, you check — 35 SOL! The whale tips his hat and walks on.',
           inventoryChanges: { sol: 15 },
+          collectibleDrop: 'whale_receipt',
         },
       },
       {
@@ -43,6 +44,7 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
           description: 'You walk them through the bridge process. They gratefully share some data and a VPN license.',
           inventoryChanges: { food: 60, clothing: 1 },
           daysLost: 1,
+          collectibleDrop: 'gratitude_note',
         },
       },
       {
@@ -68,6 +70,7 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
           description: 'Your crew pushes hard and wins! The rival party reluctantly pays up.',
           inventoryChanges: { sol: 30 },
           healthChange: -8,
+          collectibleDrop: 'race_trophy',
         },
       },
       {
@@ -102,6 +105,7 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
         outcome: {
           description: 'The alpha was legit! You find a hidden stash of supplies the original owner abandoned.',
           inventoryChanges: { sol: -25, food: 200, ammunition: 3 },
+          collectibleDrop: 'alpha_intel',
         },
       },
       {
@@ -135,6 +139,7 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
           description: 'The NFT is... interesting. But the artist blesses your party with good vibes. Morale up!',
           inventoryChanges: { sol: -5 },
           partyEffect: { type: 'heal', value: 12, target: 'all' },
+          collectibleDrop: 'pixelated_nft',
         },
       },
       {
@@ -159,6 +164,7 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
         outcome: {
           description: 'The OG shares survival tips: shortcuts, safe routes, and which forts have the best deals. Your party gains confidence.',
           partyEffect: { type: 'heal', value: 15, target: 'all' },
+          collectibleDrop: 'signed_hw_wallet',
         },
       },
       {
@@ -186,6 +192,7 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
           description: 'The VC wires 50 SOL but demands you travel faster. "Time to market is everything!"',
           inventoryChanges: { sol: 50 },
           healthChange: -5,
+          collectibleDrop: 'vc_card',
         },
       },
       {
@@ -219,6 +226,7 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
         outcome: {
           description: 'You flip "buy high sell low" to "buy low sell high." The bot runs for a bit and earns some SOL before dying.',
           inventoryChanges: { sol: 20 },
+          collectibleDrop: 'salvaged_cpu',
         },
       },
     ],
@@ -236,6 +244,7 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
         outcome: {
           description: 'You present clear arguments. Nearby traders are impressed and share some supplies. The FUD spreader skulks away.',
           inventoryChanges: { food: 30, sol: 5 },
+          collectibleDrop: 'fud_trophy',
         },
       },
       {
@@ -268,6 +277,7 @@ export const TRAIL_ENCOUNTERS: Encounter[] = [
         outcome: {
           description: 'The airdrop claim goes through! Your cut is 25 SOL. Not bad for a quick detour.',
           inventoryChanges: { sol: 15 },
+          collectibleDrop: 'airdrop_split',
         },
       },
       {

@@ -40,6 +40,7 @@ export function loadGame(): { state: GameState; stats: GameStats } | null {
     state.dailySeed = state.dailySeed || null
     state.isDaily = state.isDaily || false
     state.isTurbo = state.isTurbo || false
+    state.foundCollectibles = state.foundCollectibles || []
     state.rngState = state.rngState || 0
 
     let stats: GameStats = {

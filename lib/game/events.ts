@@ -415,6 +415,7 @@ export const GAME_EVENTS: GameEvent[] = [
       outcome: {
         description: 'You claimed the airdrop! Your SOL bag grows heavier.',
         inventoryChanges: { sol: 20 },
+        collectibleDrop: 'golden_airdrop',
       },
     }],
   },
@@ -432,6 +433,7 @@ export const GAME_EVENTS: GameEvent[] = [
         outcome: {
           description: 'You salvaged some data packs and a VPN license! Score.',
           inventoryChanges: { food: 50, clothing: 1 },
+          collectibleDrop: 'degen_hoodie',
         },
       },
     ],
@@ -464,6 +466,7 @@ export const GAME_EVENTS: GameEvent[] = [
       outcome: {
         description: 'Sweet passive income. Your staked SOL earned its keep.',
         inventoryChanges: { sol: 8 },
+        collectibleDrop: 'staking_gem',
       },
     }],
   },
@@ -481,6 +484,7 @@ export const GAME_EVENTS: GameEvent[] = [
           description: 'You shared some plays and got tipped! Community is everything.',
           inventoryChanges: { sol: 10 },
           partyEffect: { type: 'heal', value: 10, target: 'all' },
+          collectibleDrop: 'hackathon_badge',
         },
       },
       {
@@ -509,6 +513,7 @@ export const GAME_EVENTS: GameEvent[] = [
         outcome: {
           description: 'The yields were real! For now...',
           inventoryChanges: { sol: 15 },
+          collectibleDrop: 'yield_receipt',
         },
       },
       {
@@ -607,6 +612,7 @@ export const GAME_EVENTS: GameEvent[] = [
           description: 'You got in! Cost you in priority fees, but you minted something rare.',
           inventoryChanges: { sol: -12 },
           partyEffect: { type: 'heal', value: 10, target: 'all' },
+          collectibleDrop: 'og_mint_pass',
         },
       },
       {

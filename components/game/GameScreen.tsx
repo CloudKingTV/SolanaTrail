@@ -28,8 +28,10 @@ import { TokenTradingView } from './TokenTradingView'
 import { EncounterDialog } from './EncounterDialog'
 import { AchievementsView } from './AchievementsView'
 import { AchievementToast } from './AchievementToast'
+import { CollectiblesView } from './CollectiblesView'
 import { GameHistory } from './GameHistory'
 import { NameEntryModal } from './NameEntryModal'
+import { loadCollectiblesServer, saveCollectiblesServer, checkSpecialCollectibles } from '@/lib/game/collectibles'
 
 interface GameScreenProps {
   walletAddress?: string
@@ -52,11 +54,14 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
   const [submittedRank, setSubmittedRank] = useState<number | null>(null)
   const [newAchievements, setNewAchievements] = useState<string[]>([])
   const [allAchievements, setAllAchievements] = useState<string[]>([])
+  const [showCollectibles, setShowCollectibles] = useState(false)
+  const [allCollectibles, setAllCollectibles] = useState<string[]>([])
   const statsRef = useRef<GameStats>(createInitialStats())
 
   // Load persisted achievements and history count on mount (server-synced)
   useEffect(() => {
     loadAchievementsServer(walletAddress).then(ids => setAllAchievements(ids))
+    loadCollectiblesServer(walletAddress).then(ids => setAllCollectibles(ids))
     setHistoryCount(getGameHistoryCount())
     // Also sync history from server to update count
     fetchGameHistoryServer(walletAddress).then(entries => setHistoryCount(entries.length))
@@ -106,6 +111,17 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
         const updated = [...new Set([...allAchievements, ...earned])]
         setAllAchievements(updated)
         saveAchievementsServer(earned, walletAddress)
+      }
+      // Sync collectibles found this run
+      const specialItems = checkSpecialCollectibles(state)
+      const runItems = [...state.foundCollectibles, ...specialItems]
+      if (runItems.length > 0) {
+        const newlyFound = runItems.filter(id => !allCollectibles.includes(id))
+        if (newlyFound.length > 0) {
+          const updated = [...new Set([...allCollectibles, ...runItems])]
+          setAllCollectibles(updated)
+          saveCollectiblesServer(runItems, walletAddress)
+        }
       }
       // Mark daily played (server-side + localStorage)
       if (state.isDaily) {
@@ -166,6 +182,16 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
       <GameHistory
         entries={historyEntries}
         onClose={() => setShowHistory(false)}
+      />
+    )
+  }
+
+  // ==================== COLLECTIBLES VIEW ====================
+  if (showCollectibles) {
+    return (
+      <CollectiblesView
+        collectedIds={allCollectibles}
+        onClose={() => setShowCollectibles(false)}
       />
     )
   }
@@ -253,6 +279,13 @@ export function GameScreen({ walletAddress, onSubmitScore, onMintNFT }: GameScre
             className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press"
           >
             🏅 Achievements ({allAchievements.length})
+          </button>
+
+          <button
+            onClick={() => setShowCollectibles(true)}
+            className="w-full min-h-[44px] px-6 py-2 rounded-xl border border-sol-border bg-transparent text-sol-muted text-xs hover:bg-sol-card hover:text-sol-text transition-all btn-press"
+          >
+            🎒 Items ({allCollectibles.length})
           </button>
 
           <button

@@ -205,6 +205,7 @@ export interface EventOutcome {
   }
   healthChange?: number  // direct health modifier for whole party
   daysLost?: number
+  collectibleDrop?: string  // collectible item ID to award
 }
 
 // --- HUNTING (Alpha Scouting) ---
@@ -251,7 +252,20 @@ export interface EncounterChoice {
     }
     healthChange?: number
     daysLost?: number
+    collectibleDrop?: string  // collectible item ID to award
   }
+}
+
+// --- COLLECTIBLES ---
+export type CollectibleRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+
+export interface Collectible {
+  id: string
+  name: string
+  icon: string
+  description: string
+  rarity: CollectibleRarity
+  source: string  // hint text for how to find it
 }
 
 // --- ACHIEVEMENTS ---
@@ -301,8 +315,9 @@ export interface GameState {
   // Random encounters
   currentEncounter: Encounter | null
   selectedEncounterChoice: EncounterChoice | null
-  // Achievements
+  // Achievements & Collectibles
   unlockedAchievements: string[] // achievement IDs
+  foundCollectibles: string[] // collectible IDs found this run
   // Save/Load & Daily Challenge
   dailySeed: string | null // null = normal mode, string = daily challenge seed
   isDaily: boolean

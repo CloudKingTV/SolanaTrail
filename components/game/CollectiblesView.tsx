@@ -1,0 +1,88 @@
+'use client'
+
+import { COLLECTIBLES, RARITY_COLORS, getCollectiblesSortedByRarity } from '@/lib/game/collectibles'
+import { CollectibleRarity } from '@/lib/game/types'
+import { Button } from '@/components/ui/Button'
+
+interface CollectiblesViewProps {
+  collectedIds: string[]
+  onClose: () => void
+}
+
+const RARITY_LABEL: Record<CollectibleRarity, string> = {
+  common: 'Common',
+  uncommon: 'Uncommon',
+  rare: 'Rare',
+  epic: 'Epic',
+  legendary: 'Legendary',
+}
+
+export function CollectiblesView({ collectedIds, onClose }: CollectiblesViewProps) {
+  const collected = new Set(collectedIds)
+  const total = COLLECTIBLES.length
+  const found = collectedIds.filter(id => COLLECTIBLES.some(c => c.id === id)).length
+  const sorted = getCollectiblesSortedByRarity()
+
+  return (
+    <div className="flex flex-col items-center min-h-[100dvh] p-6 space-y-4">
+      <div className="text-center space-y-2">
+        <div className="text-4xl">🎒</div>
+        <h1 className="font-pixel text-lg text-sol-green glow-green">ITEMS</h1>
+        <p className="text-xs text-sol-muted">{found}/{total} collected</p>
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-full max-w-sm h-2 rounded-full bg-sol-darker border border-sol-border overflow-hidden">
+        <div
+          className="h-full bg-sol-green transition-all"
+          style={{ width: `${(found / total) * 100}%` }}
+        />
+      </div>
+
+      {/* Item grid */}
+      <div className="w-full max-w-sm space-y-2 overflow-y-auto flex-1">
+        {sorted.map((item) => {
+          const isCollected = collected.has(item.id)
+          const colors = RARITY_COLORS[item.rarity]
+
+          return (
+            <div
+              key={item.id}
+              className={`p-3 rounded-lg border ${
+                isCollected
+                  ? `${colors.border} ${colors.bg}`
+                  : 'border-sol-border bg-sol-darker opacity-50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">
+                  {isCollected ? item.icon : '🔒'}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-semibold ${isCollected ? colors.text : 'text-sol-muted'}`}>
+                      {isCollected ? item.name : '???'}
+                    </span>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${colors.bg} ${colors.text}`}>
+                      {RARITY_LABEL[item.rarity]}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-sol-muted mt-0.5">
+                    {isCollected ? item.description : item.source}
+                  </div>
+                </div>
+                {isCollected && (
+                  <span className={`text-xs ${colors.text}`}>✓</span>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <Button variant="ghost" fullWidth onClick={onClose} className="max-w-sm">
+        ← Back
+      </Button>
+    </div>
+  )
+}
